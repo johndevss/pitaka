@@ -37,7 +37,7 @@ class DatabaseHelper {
         amount REAL NOT NULL,
         category TEXT,
         note TEXT,
-        date TEXT NOT NULL,
+        created_at TEXT NOT NULL,
         FOREIGN KEY (account_id) REFERENCES accounts (id)
       )
     ''');
