@@ -54,4 +54,20 @@ class AccountDao {
       whereArgs: [id],
     );
   }
+
+  // Method to calculate the current balance of an account by summing its transactions
+  Future<double> getCurrentBalance(int accountId) async {
+    final db = await DatabaseHelper.initDb();
+
+    final account = await getAccountById(accountId);
+    if (account == null) return 0.0;
+
+    final result = await db.rawQuery(
+      'SELECT SUM(amount) as total FROM transactions WHERE account_id = ?',
+      [accountId],
+    );
+
+    final transactionSum = (result.first['total'] as double?) ?? 0.0;
+    return account.balance + transactionSum;
+  }
 }
