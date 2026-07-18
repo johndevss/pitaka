@@ -21,11 +21,19 @@ class AccountsScreen extends ConsumerWidget {
               child: Text('No accounts yet. Tap + to add one.'),
             );
           }
-          return ListView.builder(
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.95,
+            ),
             itemCount: accounts.length,
             itemBuilder: (context, index) {
               final account = accounts[index];
-              return _AccountTile(account: account);
+              return _AccountCard(account: account);
             },
           );
         },
@@ -42,57 +50,153 @@ class AccountsScreen extends ConsumerWidget {
   void _showAddAccountSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // lets the sheet resize when keyboard opens
+      isScrollControlled: true, 
       builder: (context) => const _AddAccountSheet(),
     );
   }
 }
 
-// Shows a single account row, and reads its computed balance
-// (starting balance + all transactions) via accountBalanceProvider.
-class _AccountTile extends ConsumerWidget {
+class _AccountCard extends ConsumerWidget {
   final Account account;
 
-  const _AccountTile({required this.account});
+  const _AccountCard({required this.account});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final balanceAsync = ref.watch(accountBalanceProvider(account.id!));
+    final cardColor = _colorForType(account.type);
 
-    return ListTile(
-      leading: CircleAvatar(
-        child: Icon(_iconForType(account.type)),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: cardColor.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      title: Text(account.name),
-      subtitle: Text(account.type),
-      trailing: balanceAsync.when(
-        data: (balance) => Text(
-          '₱${balance.toStringAsFixed(2)}',
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        loading: () => const SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-        error: (err, stack) => const Text('—'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top row: icon badge + name, three-dot menu
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(_iconForType(account.type), size: 18, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  account.name,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Icon(Icons.more_horiz, size: 18, color: Colors.white70),
+            ],
+          ),
+          const SizedBox(height: 4),
+
+          // Subtitle
+          Text(
+            _subtitleForAccount(account),
+            style: const TextStyle(
+              fontSize: 11,
+              color: Colors.white70,
+            ),
+          ),
+
+          const Spacer(),
+
+          // Bottom row: Balance label + value
+          const Text(
+            'BALANCE',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Colors.white70,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 2),
+          balanceAsync.when(
+            data: (balance) => Text(
+              '₱${balance.toStringAsFixed(2)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            loading: () => const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+            error: (err, stack) => const Text(
+              '—',
+              style: TextStyle(color: Colors.white70),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Color _colorForType(String type) {
+    switch (type) {
+      case 'bank':
+        return const Color(0xffd64545);
+      case 'e-wallet':
+        return const Color(0xff1f8a5b);
+      case 'credit':
+        return const Color(0xff3aa76d);
+      case 'cash':
+        return const Color(0xffd9a441);
+      default:
+        return const Color(0xff666666);
+    }
   }
 
   IconData _iconForType(String type) {
     switch (type) {
       case 'bank':
-        return Icons.account_balance;
+        return Icons.account_balance_rounded;
       case 'e-wallet':
-        return Icons.phone_iphone;
+        return Icons.phone_iphone_rounded;
       case 'credit':
-        return Icons.credit_card;
+        return Icons.credit_card_rounded;
       case 'cash':
-        return Icons.money;
+        return Icons.payments_rounded;
       default:
-        return Icons.account_balance_wallet;
+        return Icons.account_balance_wallet_rounded;
     }
+  }
+
+  String _subtitleForAccount(Account account) {
+    final typeLabel = account.type == 'e-wallet'
+        ? 'Debit'
+        : account.type == 'credit'
+            ? 'Credit'
+            : account.type[0].toUpperCase() + account.type.substring(1);
+    return '$typeLabel · PHP';
   }
 }
 
@@ -131,17 +235,16 @@ class _AddAccountSheetState extends ConsumerState<_AddAccountSheet> {
       createdAt: DateTime.now(),
     ));
 
-    // Tell Riverpod the accounts list is stale, so it re-fetches
-    // and the Accounts screen updates automatically.
     ref.invalidate(accountsProvider);
 
-    if (context.mounted) Navigator.of(context).pop();
+    if (!mounted) return; 
+    
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      // Pushes the sheet up above the keyboard when it's open
       padding: EdgeInsets.only(
         left: 16,
         right: 16,
