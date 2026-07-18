@@ -1,5 +1,3 @@
-// lib/screens/account/account_card.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/account_providers.dart';
@@ -16,7 +14,7 @@ class AccountCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final balanceAsync = ref.watch(accountBalanceProvider(account.id!));
-    final cardColor = _colorForType(account.type);
+    final cardColor = _colorForAccount(account); // Evaluates custom brand colors first
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -34,7 +32,6 @@ class AccountCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top row: icon badge + name, three-dot menu
           Row(
             children: [
               Container(
@@ -44,7 +41,22 @@ class AccountCard extends ConsumerWidget {
                   color: Colors.white.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(_iconForType(account.type), size: 18, color: Colors.white),
+                clipBehavior: Clip.antiAlias, // Ensures circular masking for logos
+                child: account.iconKey != null
+                    ? Image.asset(
+                        'assets/icons/institutions/${account.iconKey}.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          _iconForType(account.type),
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Icon(
+                        _iconForType(account.type), 
+                        size: 18, 
+                        color: Colors.white,
+                      ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -64,7 +76,6 @@ class AccountCard extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
 
-          // Subtitle
           Text(
             _subtitleForAccount(account),
             style: const TextStyle(
@@ -75,7 +86,6 @@ class AccountCard extends ConsumerWidget {
 
           const Spacer(),
 
-          // Bottom row: Balance label + value
           const Text(
             'BALANCE',
             style: TextStyle(
@@ -110,6 +120,40 @@ class AccountCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  // Looks up the specific brand identity color using the iconKey database value
+  Color _colorForAccount(Account account) {
+    switch (account.iconKey) {
+      // Wallets
+      case 'gcash':
+        return const Color(0xFF005CE6); // GCash Blue
+      case 'maya':
+        return const Color(0xFF00DF89); // Maya Vibrant Green
+      case 'grabpay':
+        return const Color(0xFF00B14F); // Grab Green
+      case 'shopeepay':
+        return const Color(0xFFEE4D2D); // Shopee Orange
+      case 'maribank':
+        return const Color(0xFFF58220); // Maribank Orange
+
+      // Banks
+      case 'bpi':
+        return const Color(0xFF8A1538); // BPI Maroon/Red
+      case 'bdo':
+        return const Color(0xFF002C6C); // BDO Deep Blue
+      case 'metrobank':
+        return const Color(0xFF00529B); // Metrobank Blue
+      case 'unionbank':
+        return const Color(0xFFFF671F); // UnionBank Vibrant Orange
+      case 'landbank':
+        return const Color(0xFF006A4E); // Landbank Forest Green
+      case 'rcbc':
+        return const Color(0xFF003DA5); // RCBC Corporate Blue
+        
+      default:
+        return _colorForType(account.type); // Safe fallback if no match found
+    }
   }
 
   Color _colorForType(String type) {

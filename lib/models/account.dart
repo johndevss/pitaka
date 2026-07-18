@@ -5,7 +5,9 @@ class Account {
   final String type;
   final double balance;
   final double? interestRate;
+  final String? iconKey;
   final DateTime createdAt;
+
 
   Account( {
     this.id,
@@ -13,6 +15,7 @@ class Account {
     required this.type,
     required this.balance,
     this.interestRate,
+    this.iconKey,
     required this.createdAt,
   });
 
@@ -23,6 +26,7 @@ class Account {
       'name': name,
       'type': type,
       'balance': balance,
+      'icon_key': iconKey,
       'interest_rate': interestRate,
       'created_at': createdAt.toIso8601String(),
     };
@@ -30,15 +34,16 @@ class Account {
 
   // Converts map back to account object to read data out of SQLite
   factory Account.fromMap(Map<String, dynamic> map) {
-    return Account(
-      id: map['id'] as int?,
-      name: map['name'] as String,
-      type: map['type'] as String,
-      balance: map['balance'] as double,
-      interestRate: map['interest_rate'] as double?,
-      createdAt: DateTime.parse(map['created_at'] as String),
-    );
-  }
+  return Account(
+    id: map['id'] as int?,
+    name: map['name'] as String,
+    type: map['type'] as String,
+    balance: map['balance'] as double,
+    interestRate: map['interest_rate'] as double?,
+    iconKey: map['icon_key'] as String?,
+    createdAt: DateTime.parse(map['created_at'] as String),
+  );
+}
 
   // Updates balance after a transaction
   Account copyWith({
@@ -47,6 +52,7 @@ class Account {
     String? type,
     double? balance,
     double? interestRate,
+    String? iconKey,  
     DateTime? createdAt,
   }) {
     return Account(
@@ -55,6 +61,7 @@ class Account {
       type: type ?? this.type,
       balance: balance ?? this.balance,
       interestRate: interestRate ?? this.interestRate,
+      iconKey: iconKey ?? this.iconKey,
       createdAt: createdAt ?? this.createdAt,
     );
   }
