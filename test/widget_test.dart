@@ -1,30 +1,26 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:pitaka/main.dart';
+import 'package:pitaka/widgets/floating_nav_bar.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('Pitaka App smoke test - layout renders successfully', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const PitakaApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that the initial Home state text displays correctly
+    expect(find.text('Current Screen: HOME'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verify that the FloatingNavBar component exists on screen
+    expect(find.byType(FloatingNavBar), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that the tab options exist within the layout
+    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Wallet'), findsOneWidget);
+    expect(find.text('Plan'), findsOneWidget);
+    expect(find.text('History'), findsOneWidget);
+
+    // Verify that our add button icon renders
+    expect(find.byIcon(Icons.add_rounded), findsOneWidget);
   });
 }

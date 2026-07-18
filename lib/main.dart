@@ -2,28 +2,30 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'theme/app_theme.dart';
 import 'screens/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     const ProviderScope(
-      child: MyApp(),
+      child: PitakaApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PitakaApp extends StatelessWidget {
+  const PitakaApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Pitaka',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const HomeShell(),
+      debugShowCheckedModeBanner: false,
+      
+      theme: AppTheme.lightTheme, 
+      
+      home: const HomeShell(), 
     );
   }
 }

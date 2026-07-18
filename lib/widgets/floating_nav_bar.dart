@@ -67,15 +67,12 @@ class FloatingNavBar extends StatelessWidget {
                       onTap: () => onTabSelected(NavTab.history),
                     ),
                     
-                    // 1. The divider line separating the tabs from the filled action block
                     Container(
                       height: 32, // Floating divider line look
                       width: 1,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.12),
                     ),
                     
-                    // 2. Wrap the button in an Expanded or let it define its width, 
-                    // removing the outer padding so the color fills right to the edge.
                     _AddButton(onPressed: onAddPressed),
                   ],
                 ),
@@ -101,14 +98,12 @@ class _AddButton extends StatelessWidget {
       onTap: onPressed,
       child: Container(
         width: 64,
-        height: 64, // Matches the exact height of the pill container (64)
+        height: 64,
         decoration: BoxDecoration(
-          color: theme.colorScheme.primary, // The filled color
+          color: theme.colorScheme.primary,
           borderRadius: const BorderRadius.only(
-            // 3. Matches the parent pill's outer 32px rounding on the right side
             topRight: Radius.circular(32),
             bottomRight: Radius.circular(32),
-            // 4. Keeps a slight square-rounded corner on the inner side facing the divider
             topLeft: Radius.circular(12),
             bottomLeft: Radius.circular(12),
           ),
