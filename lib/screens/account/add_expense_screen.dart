@@ -1,4 +1,4 @@
-// lib/screens/add_expense_screen.dart
+// lib/screens/account/add_expense_screen.dart
 
 import 'package:flutter/material.dart';
 

@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import '../widgets/floating_nav_bar.dart';
-import 'accounts_screen.dart';
-import 'add_expense_screen.dart';
+import 'account/accounts_screen.dart';
+import 'account/add_expense_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
