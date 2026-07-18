@@ -23,8 +23,8 @@ class Account {
       'name': name,
       'type': type,
       'balance': balance,
-      'interestRate': interestRate,
-      'createdAt': createdAt.toIso8601String(),
+      'interest_rate': interestRate,
+      'created_at': createdAt.toIso8601String(),
     };
   }
 
