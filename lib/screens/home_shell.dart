@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/floating_nav_bar.dart';
 import 'account/accounts_screen.dart';
-import 'account/add_expense_screen.dart';
 import 'dashboard_screen.dart';
+import 'expense_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -37,7 +37,7 @@ class _HomeShellState extends State<HomeShell> {
 
   void _onAddPressed() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
+      MaterialPageRoute(builder: (context) => const ExpenseScreen()),
     );
   }
 

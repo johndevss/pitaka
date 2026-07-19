@@ -4,7 +4,7 @@ class TransactionModel {
   final int? id;
   final int accountId;
   final double amount;
-  final String category;
+  final String? category; 
   final String? note;
   final DateTime createdAt;
 
@@ -12,7 +12,7 @@ class TransactionModel {
     this.id,
     required this.accountId,
     required this.amount,
-    required this.category,
+    this.category,
     this.note,
     required this.createdAt,
   });
@@ -32,8 +32,8 @@ class TransactionModel {
     return TransactionModel(
       id: map['id'] as int?,
       accountId: map['account_id'] as int,
-      amount: map['amount'] as double,
-      category: map['category'] as String,
+      amount: (map['amount'] as num).toDouble(),
+      category: map['category'] as String?,
       note: map['note'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
     );

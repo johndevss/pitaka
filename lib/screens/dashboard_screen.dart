@@ -372,7 +372,7 @@ class _TransactionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  transaction.category,
+                  transaction.category ?? 'Uncategorized',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
