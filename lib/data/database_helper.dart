@@ -33,6 +33,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         type TEXT NOT NULL,
+        provider TEXT NOT NULL,
         balance REAL NOT NULL DEFAULT 0,
         interest_rate REAL,
         icon_key TEXT,

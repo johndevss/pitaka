@@ -32,6 +32,7 @@ class AccountCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Icon + Provider Name + More Button
           Row(
             children: [
               Container(
@@ -41,7 +42,7 @@ class AccountCard extends ConsumerWidget {
                   color: Colors.white.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
-                clipBehavior: Clip.antiAlias, // Ensures circular masking for logos
+                clipBehavior: Clip.antiAlias,
                 child: account.iconKey != null
                     ? Image.asset(
                         'assets/icons/institutions/${account.iconKey}.png',
@@ -61,7 +62,7 @@ class AccountCard extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  account.name,
+                  _displayNameForProvider(account.provider),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -74,8 +75,24 @@ class AccountCard extends ConsumerWidget {
               const Icon(Icons.more_horiz, size: 18, color: Colors.white70),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6), // Space between provider row and account name
 
+          // ACCOUNT NAME: Custom nickname chosen by the user
+          if (account.name != null && account.name!.isNotEmpty) ...[
+            Text(
+              account.name!,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+          ],
+
+          // SUBTITLE: Account type (e.g., Debit · PHP)
           Text(
             _subtitleForAccount(account),
             style: const TextStyle(
@@ -193,5 +210,36 @@ class AccountCard extends ConsumerWidget {
             ? 'Credit'
             : account.type[0].toUpperCase() + account.type.substring(1);
     return '$typeLabel · PHP';
+  }
+
+  String _displayNameForProvider(String provider) {
+    switch (provider) {
+      case 'gcash':
+        return 'GCash';
+      case 'maya':
+        return 'Maya';
+      case 'grabpay':
+        return 'GrabPay';
+      case 'shopeepay':
+        return 'ShopeePay';
+      case 'maribank':
+        return 'MariBank';
+      case 'bpi':
+        return 'BPI';
+      case 'bdo':
+        return 'BDO';
+      case 'metrobank':
+        return 'Metrobank';
+      case 'unionbank':
+        return 'UnionBank';
+      case 'landbank':
+        return 'Landbank';
+      case 'rcbc':
+        return 'RCBC';
+      default:
+        // Fallback: capitalized string if it's a custom typed name
+        if (provider.isEmpty) return 'Custom';
+        return provider[0].toUpperCase() + provider.substring(1);
+    }
   }
 }

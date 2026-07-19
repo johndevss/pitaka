@@ -21,6 +21,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
   
   late TabController _tabController;
   Institution? _selectedInstitution;
+  bool _showProviderError = false;
 
   @override
   void initState() {
@@ -64,17 +65,29 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Check custom provider selection first
+    if (_selectedInstitution == null) {
+      setState(() {
+        _showProviderError = true;
+      });
+    }
 
-    final dao = ref.read(accountDaoProvider);
+    // Run standard text field validations
+    final isFormValid = _formKey.currentState!.validate();
+
+    // Stop submission if either check fails
+    if (_selectedInstitution == null || !isFormValid) return;
+
+    final dao = ref.read(accountDaoProvider); 
     final accountType = _getAccountTypeFromIndex(_tabController.index);
 
     await dao.insertAccount(Account(
-      name: _nameController.text.trim(),
+      name: _nameController.text.trim(), 
       type: accountType,
+      provider: _selectedInstitution?.iconKey ?? 'custom', 
       balance: double.parse(_balanceController.text),
-      iconKey: _selectedInstitution?.iconKey, 
-      interestRate: (accountType == 'bank' && _interestController.text.trim().isNotEmpty)
+      iconKey: _selectedInstitution?.iconKey,
+      interestRate: (accountType == 'bank' && _interestController.text.trim().isNotEmpty) 
           ? double.tryParse(_interestController.text)
           : null,
       createdAt: DateTime.now(),
@@ -82,7 +95,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
 
     ref.invalidate(accountsProvider);
 
-    if (!mounted) return; 
+    if (!mounted) return;
     Navigator.of(context).pop();
   }
 
@@ -122,8 +135,56 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                 height: 85,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: filteredInstitutions.length,
+                  itemCount: filteredInstitutions.length + 1,
                   itemBuilder: (context, index) {
+                    if (index == filteredInstitutions.length) {
+                      return GestureDetector(
+                        onTap: () {
+                          // TODO: Implement your custom provider modal later
+                          print("Custom provider clicked");
+                        },
+                        child: Container(
+                          width: 85,
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            border: Border.all(
+                              color: Colors.grey.shade300,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.add,
+                                  size: 24,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Custom',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    
                     final institution = filteredInstitutions[index];
                     final isSelected = _selectedInstitution == institution;
 
@@ -132,6 +193,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                         setState(() {
                           _selectedInstitution = institution;
                           _nameController.text = institution.name;
+                          _showProviderError = false;
                         });
                       },
                       child: Container(
@@ -187,21 +249,26 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                   },
                 ),
               ),
+              if (_showProviderError)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+                  child: Text(
+                    'Please pick a provider',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
               const SizedBox(height: 24),
 
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Account Name',
-                  hintText: 'e.g. My Primary GCash, BPI Payroll',
+                  labelText: 'Nickname (Optional)',
+                  hintText: 'e.g. Savings, My Wallet',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 16),
 

@@ -1,8 +1,9 @@
 // lib/models/account.dart
 class Account {
   final int? id;
-  final String name;
+  final String? name;
   final String type;
+  final String provider;
   final double balance;
   final double? interestRate;
   final String? iconKey;
@@ -11,8 +12,9 @@ class Account {
 
   Account( {
     this.id,
-    required this.name,
+    this.name,
     required this.type,
+    required this.provider, 
     required this.balance,
     this.interestRate,
     this.iconKey,
@@ -25,6 +27,7 @@ class Account {
       'id': id,
       'name': name,
       'type': type,
+      'provider': provider,
       'balance': balance,
       'icon_key': iconKey,
       'interest_rate': interestRate,
@@ -36,8 +39,9 @@ class Account {
   factory Account.fromMap(Map<String, dynamic> map) {
   return Account(
     id: map['id'] as int?,
-    name: map['name'] as String,
+    name: map['name'] as String?,
     type: map['type'] as String,
+    provider: map['provider'] as String,
     balance: map['balance'] as double,
     interestRate: map['interest_rate'] as double?,
     iconKey: map['icon_key'] as String?,
@@ -50,6 +54,7 @@ class Account {
     int? id,
     String? name,
     String? type,
+    String? provider,
     double? balance,
     double? interestRate,
     String? iconKey,  
@@ -59,6 +64,7 @@ class Account {
       id: id ?? this.id,
       name: name ?? this.name,
       type: type ?? this.type,
+      provider: provider ?? this.provider,
       balance: balance ?? this.balance,
       interestRate: interestRate ?? this.interestRate,
       iconKey: iconKey ?? this.iconKey,
