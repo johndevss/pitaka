@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/account_providers.dart';
 import '../../models/account.dart';
 import '../../data/institutions.dart';
+import '../../utils/currency_formatter.dart';
 
 class AddAccountScreen extends ConsumerStatefulWidget {
   const AddAccountScreen({super.key});
@@ -23,6 +24,9 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
   Institution? _selectedInstitution;
   bool _showProviderError = false;
 
+  bool _hasInterest = false;
+  String _selectedInterestType = 'daily';
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +37,9 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
         setState(() {
           _selectedInstitution = null;
           _nameController.clear();
+          _hasInterest = false;
+          _selectedInterestType = 'daily';
+          _interestController.clear();
         });
       }
     });
@@ -88,12 +95,12 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
       balance: double.parse(_balanceController.text),
       iconKey: _selectedInstitution?.iconKey,
       currency: _selectedInstitution?.currency ?? 'PHP',
-      interestRate: (accountType == 'bank' && _interestController.text.trim().isNotEmpty) 
-          ? double.tryParse(_interestController.text)
-          : null,
-      interestType: (accountType == 'bank' && _interestController.text.trim().isNotEmpty)
-          ? 'daily'
-          : 'none',
+      interestRate: ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest && _interestController.text.trim().isNotEmpty)
+        ? double.tryParse(_interestController.text)
+        : null,
+      interestType: ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest)
+        ? _selectedInterestType
+        : 'none',
       createdAt: DateTime.now(),
     ));
 
@@ -103,9 +110,31 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
     Navigator.of(context).pop();
   }
 
+  Widget _buildInterestTypeChip(String value, String label) {
+    final isSelected = _selectedInterestType == value;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) {
+        setState(() {
+          _selectedInterestType = value;
+        });
+      },
+      selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+      labelStyle: TextStyle(
+        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade700,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      side: BorderSide(
+        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredInstitutions = _getFilteredInstitutions();
+    final currentCurrency = _selectedInstitution?.currency ?? 'PHP';
 
     return Scaffold(
       appBar: AppBar(
@@ -282,7 +311,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                   labelText: _tabController.index == 2 
                       ? 'Current Outstanding Balance (Debt)' 
                       : 'Starting Balance',
-                  prefixText: '₱ ',
+                  prefixText: '${currencySymbol(currentCurrency)} ',
                   border: const OutlineInputBorder(),
                 ),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -297,25 +326,67 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                 },
               ),
               
-              if (_tabController.index == 1) ...[
+              if (_tabController.index == 0 || _tabController.index == 1) ...[
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _interestController,
-                  decoration: const InputDecoration(
-                    labelText: 'Interest Rate per Year (Optional)',
-                    suffixText: '%',
-                    hintText: 'e.g. 4.0',
-                    border: OutlineInputBorder(),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    'This account earns interest',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) return null;
-                    if (double.tryParse(value) == null) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
+                  value: _hasInterest,
+                  onChanged: (value) {
+                    setState(() {
+                      _hasInterest = value;
+                      if (!value) {
+                        _interestController.clear();
+                      }
+                    });
                   },
                 ),
+
+                if (_hasInterest) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Crediting Frequency',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildInterestTypeChip('daily', 'Daily'),
+                      _buildInterestTypeChip('annual', 'Annual'),
+                      _buildInterestTypeChip('quarterly', 'Quarterly'),
+                      _buildInterestTypeChip('other', 'Other'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _interestController,
+                    decoration: const InputDecoration(
+                      labelText: 'Interest Rate per Year',
+                      suffixText: '%',
+                      hintText: 'e.g. 4.0',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    validator: (value) {
+                      if (!_hasInterest) return null;
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter a rate, or turn off interest above';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
               ],
 
               const SizedBox(height: 32),
