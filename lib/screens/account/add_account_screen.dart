@@ -105,6 +105,8 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
     ));
 
     ref.invalidate(accountsProvider);
+    ref.invalidate(totalEquityByCurrencyProvider);
+
 
     if (!mounted) return;
     Navigator.of(context).pop();
