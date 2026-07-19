@@ -227,7 +227,6 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                       onTap: () {
                         setState(() {
                           _selectedInstitution = institution;
-                          _nameController.text = institution.name;
                           _showProviderError = false;
                         });
                       },
