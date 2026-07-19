@@ -3,6 +3,12 @@
         android:label="pitaka"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        
+        <!-- FORCE THE APP TO USE THE STABLE SKIA RENDERER -->
+        <meta-data 
+            android:name="io.flutter.embedding.android.EnableImpeller" 
+            android:value="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -7,15 +7,24 @@ class DatabaseHelper {
   static const _dbName = 'pitaka.db';
   static const _dbVersion = 1;
 
+  // Add a static variable to hold the open database connection
+  static Database? _database;
+
   static Future<Database> initDb() async {
+    // Return the cached instance immediately if it's already initialized
+    if (_database != null) return _database!;
+
     final path = join(await getDatabasesPath(), _dbName);
 
-    return openDatabase(
+    // Open it once and assign it to the static variable
+    _database = await openDatabase(
       path,
       version: _dbVersion,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
+
+    return _database!;
   }
 
   static Future<void> _onCreate(Database db, int version) async {
