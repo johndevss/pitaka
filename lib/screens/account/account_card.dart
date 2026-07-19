@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/account_providers.dart';
+import '../../utils/currency_formatter.dart';
 import '../../models/account.dart';
 
 class AccountCard extends ConsumerWidget {
@@ -115,7 +116,7 @@ class AccountCard extends ConsumerWidget {
           const SizedBox(height: 2),
           balanceAsync.when(
             data: (balance) => Text(
-              '₱${balance.toStringAsFixed(2)}',
+              formatMoney(balance, account.currency),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -209,7 +210,7 @@ class AccountCard extends ConsumerWidget {
         : account.type == 'credit'
             ? 'Credit'
             : account.type[0].toUpperCase() + account.type.substring(1);
-    return '$typeLabel · PHP';
+    return '$typeLabel · ${account.currency}';
   }
 
   String _displayNameForProvider(String provider) {

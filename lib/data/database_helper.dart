@@ -35,7 +35,10 @@ class DatabaseHelper {
         type TEXT NOT NULL,
         provider TEXT NOT NULL,
         balance REAL NOT NULL DEFAULT 0,
+        currency TEXT NOT NULL DEFAULT 'PHP',
         interest_rate REAL,
+        interest_type TEXT NOT NULL DEFAULT 'none',
+        last_interest_applied_date TEXT,
         icon_key TEXT,
         created_at TEXT NOT NULL
       )

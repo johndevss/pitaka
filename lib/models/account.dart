@@ -5,7 +5,10 @@ class Account {
   final String type;
   final String provider;
   final double balance;
+  final String currency;
   final double? interestRate;
+  final String interestType;
+  final DateTime? lastInterestAppliedDate;
   final String? iconKey;
   final DateTime createdAt;
 
@@ -16,7 +19,10 @@ class Account {
     required this.type,
     required this.provider, 
     required this.balance,
+    required this.currency,
     this.interestRate,
+    required this.interestType,
+    this.lastInterestAppliedDate,
     this.iconKey,
     required this.createdAt,
   });
@@ -29,8 +35,11 @@ class Account {
       'type': type,
       'provider': provider,
       'balance': balance,
-      'icon_key': iconKey,
+      'currency': currency,
       'interest_rate': interestRate,
+      'interest_type': interestType,
+      'last_interest_applied_date': lastInterestAppliedDate?.toIso8601String(),
+      'icon_key': iconKey,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -43,7 +52,12 @@ class Account {
     type: map['type'] as String,
     provider: map['provider'] as String,
     balance: map['balance'] as double,
+    currency: map['currency'] as String,
     interestRate: map['interest_rate'] as double?,
+    interestType: map['interest_type'] as String,
+    lastInterestAppliedDate: map['last_interest_applied_date'] != null
+          ? DateTime.parse(map['last_interest_applied_date'] as String)
+          : null,
     iconKey: map['icon_key'] as String?,
     createdAt: DateTime.parse(map['created_at'] as String),
   );
@@ -56,7 +70,10 @@ class Account {
     String? type,
     String? provider,
     double? balance,
+    String? currency,
     double? interestRate,
+    String? interestType,
+    DateTime? lastInterestAppliedDate,
     String? iconKey,  
     DateTime? createdAt,
   }) {
@@ -66,7 +83,10 @@ class Account {
       type: type ?? this.type,
       provider: provider ?? this.provider,
       balance: balance ?? this.balance,
+      currency: currency ?? this.currency,
       interestRate: interestRate ?? this.interestRate,
+      interestType: interestType ?? this.interestType,
+      lastInterestAppliedDate: lastInterestAppliedDate ?? this.lastInterestAppliedDate,
       iconKey: iconKey ?? this.iconKey,
       createdAt: createdAt ?? this.createdAt,
     );

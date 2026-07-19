@@ -87,9 +87,13 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
       provider: _selectedInstitution?.iconKey ?? 'custom', 
       balance: double.parse(_balanceController.text),
       iconKey: _selectedInstitution?.iconKey,
+      currency: _selectedInstitution?.currency ?? 'PHP',
       interestRate: (accountType == 'bank' && _interestController.text.trim().isNotEmpty) 
           ? double.tryParse(_interestController.text)
           : null,
+      interestType: (accountType == 'bank' && _interestController.text.trim().isNotEmpty)
+          ? 'daily'
+          : 'none',
       createdAt: DateTime.now(),
     ));
 
