@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/account.dart';
 import '../../providers/account_providers.dart';
+import '../../providers/transaction_providers.dart';
 import '../../utils/currency_formatter.dart';
 
 class EditAccountScreen extends ConsumerStatefulWidget {
@@ -26,10 +27,10 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
   void initState() {
     super.initState();
 
-    // 1. Pre-fill text field with existing account nickname
+    // Pre-fill text field with existing account nickname
     _nameController = TextEditingController(text: widget.account.name ?? '');
 
-    // 2. Pre-fill interest settings
+    // Pre-fill interest settings
     _hasInterest = widget.account.interestType != 'none';
     _selectedInterestType = _hasInterest ? widget.account.interestType : 'daily';
     _interestController = TextEditingController(
@@ -52,7 +53,6 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
     final dao = ref.read(accountDaoProvider);
     final accountType = widget.account.type;
 
-    // Preserve provider, balance, currency, and update nickname & interest
     final updatedAccount = widget.account.copyWith(
       name: _nameController.text.trim(),
       interestRate: ((accountType == 'bank' || accountType == 'e-wallet') &&
@@ -67,15 +67,80 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
 
     await dao.updateAccount(updatedAccount);
 
-    // Invalidate providers to force UI updates across screens
-    ref.invalidate(accountsProvider);
-    ref.invalidate(totalEquityByCurrencyProvider);
-    if (widget.account.id != null) {
-      ref.invalidate(accountBalanceProvider(widget.account.id!));
-    }
+    _invalidateProviders();
 
     if (!mounted) return;
     Navigator.of(context).pop();
+  }
+
+  Future<void> _deleteAccount() async {
+    if (widget.account.id == null) return;
+
+    final dao = ref.read(accountDaoProvider);
+
+    // 1. Delete account from SQLite database
+    await dao.deleteAccount(widget.account.id!);
+
+    // 2. Invalidate all dependent providers so the UI stays in sync
+    _invalidateProviders();
+
+    if (!mounted) return;
+    // 3. Pop back to the Accounts screen
+    Navigator.of(context).pop();
+  }
+
+  void _invalidateProviders() {
+    ref.invalidate(accountsProvider);
+    ref.invalidate(totalEquityByCurrencyProvider);
+    ref.invalidate(allTransactionsProvider);
+    if (widget.account.id != null) {
+      ref.invalidate(accountBalanceProvider(widget.account.id!));
+    }
+  }
+
+  // --- ROUNDED CONFIRMATION MODAL ---
+  void _showDeleteConfirmationModal() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // Rounded corners matching app design
+          ),
+          title: const Text(
+            'Delete Account?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Are you sure you want to delete "${widget.account.name ?? widget.account.provider}"? This action cannot be undone.',
+            style: const TextStyle(fontSize: 14),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey.shade700),
+              ),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close modal
+                _deleteAccount(); // Perform deletion
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildInterestTypeChip(String value, String label) {
@@ -101,7 +166,6 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Read live balance for this account
     final balanceAsync = ref.watch(accountBalanceProvider(widget.account.id!));
     final isInterestEligible =
         widget.account.type == 'bank' || widget.account.type == 'e-wallet';
@@ -109,6 +173,16 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Account'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.delete_outline_rounded,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            tooltip: 'Delete Account',
+            onPressed: _showDeleteConfirmationModal,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -117,12 +191,12 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // --- FLOATING BALANCE BADGE (Dashboard style) ---
+              // --- FLOATING BALANCE BADGE ---
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1F8A5B), // Primary Malachite Green
+                  color: const Color(0xFF1F8A5B),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -257,6 +331,28 @@ class _EditAccountScreenState extends ConsumerState<EditAccountScreen> {
                   child: Text(
                     'Save Changes',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // --- DELETE BUTTON ---
+              OutlinedButton.icon(
+                onPressed: _showDeleteConfirmationModal,
+                icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                label: const Text(
+                  'Delete Account',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.error.withValues(alpha: 0.5),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
