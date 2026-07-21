@@ -21,11 +21,9 @@ class AccountCard extends ConsumerWidget {
     
     return GestureDetector(
       onTap: () {
-        // 3. When tapped, push the EditAccountScreen onto the stack
-        // We pass the specific 'account' object so the edit screen knows what data to load
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => EditAccountScreen(account: account),
+            builder: (context) => AccountDetailsScreen(account: account),
           ),
         );
       },
