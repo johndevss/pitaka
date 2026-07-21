@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/account_providers.dart';
 import '../../utils/currency_formatter.dart';
 import '../../models/account.dart';
+import 'edit_account_screen.dart';
 
 class AccountCard extends ConsumerWidget {
   final Account account;
@@ -17,9 +18,20 @@ class AccountCard extends ConsumerWidget {
     final balanceAsync = ref.watch(accountBalanceProvider(account.id!));
     final cardColor = _colorForAccount(account); // Evaluates custom brand colors first
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+    
+    return GestureDetector(
+      onTap: () {
+        // 3. When tapped, push the EditAccountScreen onto the stack
+        // We pass the specific 'account' object so the edit screen knows what data to load
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => EditAccountScreen(account: account),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -131,12 +143,13 @@ class AccountCard extends ConsumerWidget {
               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
             ),
             error: (err, stack) => const Text(
-              '—',
-              style: TextStyle(color: Colors.white70),
+                '—',
+                style: TextStyle(color: Colors.white70),
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      )
     );
   }
 
