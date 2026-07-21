@@ -18,7 +18,9 @@ const List<_CategoryOption> _quickCategories = [
 ];
 
 class ExpenseScreen extends ConsumerStatefulWidget {
-  const ExpenseScreen({super.key});
+  final bool initialIsExpense;
+  
+  const ExpenseScreen({super.key, this.initialIsExpense = true}); 
 
   @override
   ConsumerState<ExpenseScreen> createState() => _ExpenseScreenState();
@@ -30,7 +32,13 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
 
   Account? _selectedAccount;
   String? _selectedCategory;
-  bool _isExpense = true; // true = expense (-), false = income (+)
+  late bool _isExpense;
+
+  @override
+  void initState() {
+    super.initState();
+    _isExpense = widget.initialIsExpense;
+  }
 
   @override
   void dispose() {

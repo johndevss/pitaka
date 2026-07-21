@@ -8,12 +8,14 @@ class FloatingNavBar extends StatelessWidget {
   final NavTab selectedTab;
   final ValueChanged<NavTab> onTabSelected;
   final VoidCallback onAddPressed;
+  final bool isMenuOpen;
 
   const FloatingNavBar({
     super.key,
     required this.selectedTab,
     required this.onTabSelected,
     required this.onAddPressed,
+    this.isMenuOpen = false, // Defaults to false
   });
 
   @override
@@ -73,7 +75,11 @@ class FloatingNavBar extends StatelessWidget {
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.12),
                     ),
                     
-                    _AddButton(onPressed: onAddPressed),
+                    // Passed isMenuOpen into _AddButton
+                    _AddButton(
+                      onPressed: onAddPressed,
+                      isMenuOpen: isMenuOpen,
+                    ),
                   ],
                 ),
               ),
@@ -87,8 +93,12 @@ class FloatingNavBar extends StatelessWidget {
 
 class _AddButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final bool isMenuOpen;
 
-  const _AddButton({required this.onPressed});
+  const _AddButton({
+    required this.onPressed,
+    required this.isMenuOpen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -96,11 +106,13 @@ class _AddButton extends StatelessWidget {
 
     return GestureDetector(
       onTap: onPressed,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
         width: 64,
         height: 64,
         decoration: BoxDecoration(
-          color: theme.colorScheme.primary,
+          // Color changes to gray when open, or theme primary when closed
+          color: isMenuOpen ? Colors.grey.shade600 : theme.colorScheme.primary,
           borderRadius: const BorderRadius.only(
             topRight: Radius.circular(32),
             bottomRight: Radius.circular(32),
@@ -109,7 +121,8 @@ class _AddButton extends StatelessWidget {
           ),
         ),
         child: Icon(
-          Icons.add_rounded,
+          // Icon flips between 'X' and '+'
+          isMenuOpen ? Icons.close_rounded : Icons.add_rounded,
           color: theme.colorScheme.onPrimary,
           size: 28,
         ),

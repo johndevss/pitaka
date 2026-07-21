@@ -5,6 +5,7 @@ import '../widgets/floating_nav_bar.dart';
 import 'account/accounts_screen.dart';
 import 'dashboard_screen.dart';
 import 'expense_screen.dart';
+import 'transfer_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -15,6 +16,7 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   NavTab _selectedTab = NavTab.home;
+  bool _isMenuOpen = false; // Tracks if the floating menu is currently open
 
   Widget _screenForTab(NavTab tab) {
     switch (tab) {
@@ -23,22 +25,105 @@ class _HomeShellState extends State<HomeShell> {
       case NavTab.wallet:
         return const AccountsScreen();
       case NavTab.plan:
-        // Budget/planning screen not built yet — placeholder for now
         return const Scaffold(
           body: Center(child: Text('Plan (planned)')),
         );
       case NavTab.history:
-        // Transactions/history screen not built yet — placeholder for now
         return const Scaffold(
           body: Center(child: Text('History (planned)')),
         );
     }
   }
 
-  void _onAddPressed() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const ExpenseScreen()),
+  void _onAddPressed() async {
+    // Turn button state to 'X' and gray
+    setState(() => _isMenuOpen = true);
+
+    await showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.transparent, // 1. No background overlay shadow
+      transitionDuration: const Duration(milliseconds: 150), // 2. Faster animation speed (150ms)
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Align(
+          alignment: Alignment.bottomRight,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 100, right: 20),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: 200,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.grey.shade200), // Clean border instead of shadow
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _MenuOption(
+                      icon: Icons.arrow_upward_rounded,
+                      color: const Color(0xFF2E9F5D),
+                      label: 'Income',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const ExpenseScreen(initialIsExpense: false)),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF5F7F5)),
+                    _MenuOption(
+                      icon: Icons.arrow_downward_rounded,
+                      color: const Color(0xFFD64545),
+                      label: 'Expense',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const ExpenseScreen(initialIsExpense: true)),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF5F7F5)),
+                    _MenuOption(
+                      icon: Icons.swap_horiz_rounded,
+                      color: const Color(0xFF2D88D4),
+                      label: 'Transfer',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const TransferScreen()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, anim, secondaryAnim, child) {
+        return ScaleTransition(
+          scale: CurvedAnimation(
+            parent: anim,
+            curve: Curves.easeOutCubic, // Fast and snappy exit/entry
+          ),
+          alignment: Alignment.bottomRight,
+          child: FadeTransition(
+            opacity: anim,
+            child: child,
+          ),
+        );
+      },
     );
+
+    // Revert button back to '+' when menu closes
+    if (mounted) {
+      setState(() => _isMenuOpen = false);
+    }
   }
 
   @override
@@ -47,8 +132,47 @@ class _HomeShellState extends State<HomeShell> {
       body: _screenForTab(_selectedTab),
       bottomNavigationBar: FloatingNavBar(
         selectedTab: _selectedTab,
+        isMenuOpen: _isMenuOpen, // Pass the open state down
         onTabSelected: (tab) => setState(() => _selectedTab = tab),
         onAddPressed: _onAddPressed,
+      ),
+    );
+  }
+}
+
+class _MenuOption extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final VoidCallback onTap;
+
+  const _MenuOption({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(width: 14),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF222222),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
