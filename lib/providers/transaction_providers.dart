@@ -15,6 +15,8 @@ final allTransactionsProvider = FutureProvider<List<TransactionModel>>((ref) asy
 
 final transactionsByAccountProvider =
     FutureProvider.family<List<TransactionModel>, int>((ref, accountId) async {
+  ref.watch(allTransactionsProvider);
+
   final dao = ref.watch(transactionDaoProvider);
   return dao.getTransactionsByAccount(accountId);
 });
