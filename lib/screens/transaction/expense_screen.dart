@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/account_providers.dart';
-import '../providers/transaction_providers.dart';
-import '../models/account.dart';
-import '../models/transaction_model.dart';
-import '../utils/currency_formatter.dart';
+import '../../providers/account_providers.dart';
+import '../../providers/transaction_providers.dart';
+import '../../models/account.dart';
+import '../../models/transaction_model.dart';
+import '../../utils/currency_formatter.dart';
 
 // Quick category shortcuts — expand this list as needed.
 // icon + label only; category string saved is the label.
