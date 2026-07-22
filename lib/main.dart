@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'theme/app_theme.dart';
-import 'screens/home_shell.dart';
+import 'screens/shell/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../providers/account_providers.dart';
-import '../providers/transaction_providers.dart';
-import '../models/transaction_model.dart';
-import '../utils/currency_formatter.dart';
-import 'account/account_card.dart';
+import '../../providers/account_providers.dart';
+import '../../providers/transaction_providers.dart';
+import '../../models/transaction_model.dart';
+import '../../utils/currency_formatter.dart';
+import '../account/account_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});

@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/account_providers.dart';
-import '../models/account.dart';
-import '../utils/currency_formatter.dart';
+import '../../providers/account_providers.dart';
+import '../../models/account.dart';
+import '../../utils/currency_formatter.dart';
 
 class TransferScreen extends ConsumerStatefulWidget {
   const TransferScreen({super.key});

@@ -1,11 +1,11 @@
 // lib/screens/home_shell.dart
 
 import 'package:flutter/material.dart';
-import '../widgets/floating_nav_bar.dart';
-import 'account/accounts_screen.dart';
-import 'dashboard_screen.dart';
-import 'expense_screen.dart';
-import 'transfer_screen.dart';
+import '../../widgets/floating_nav_bar.dart';
+import '../account/accounts_screen.dart';
+import '../dashboard/dashboard_screen.dart';
+import '../transaction/expense_screen.dart';
+import '../transaction/transfer_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
