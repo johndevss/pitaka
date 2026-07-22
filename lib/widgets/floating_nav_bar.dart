@@ -68,18 +68,17 @@ class FloatingNavBar extends StatelessWidget {
                       isSelected: selectedTab == NavTab.history,
                       onTap: () => onTabSelected(NavTab.history),
                     ),
-                    
+
                     Container(
                       height: 32, // Floating divider line look
                       width: 1,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.12),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.12,
+                      ),
                     ),
-                    
+
                     // Passed isMenuOpen into _AddButton
-                    _AddButton(
-                      onPressed: onAddPressed,
-                      isMenuOpen: isMenuOpen,
-                    ),
+                    _AddButton(onPressed: onAddPressed, isMenuOpen: isMenuOpen),
                   ],
                 ),
               ),
@@ -95,10 +94,7 @@ class _AddButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isMenuOpen;
 
-  const _AddButton({
-    required this.onPressed,
-    required this.isMenuOpen,
-  });
+  const _AddButton({required this.onPressed, required this.isMenuOpen});
 
   @override
   Widget build(BuildContext context) {

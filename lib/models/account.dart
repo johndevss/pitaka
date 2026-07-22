@@ -12,12 +12,11 @@ class Account {
   final String? iconKey;
   final DateTime createdAt;
 
-
-  Account( {
+  Account({
     this.id,
     this.name,
     required this.type,
-    required this.provider, 
+    required this.provider,
     required this.balance,
     required this.currency,
     this.interestRate,
@@ -46,22 +45,22 @@ class Account {
 
   // Converts map back to account object to read data out of SQLite
   factory Account.fromMap(Map<String, dynamic> map) {
-  return Account(
-    id: map['id'] as int?,
-    name: map['name'] as String?,
-    type: map['type'] as String,
-    provider: map['provider'] as String,
-    balance: map['balance'] as double,
-    currency: map['currency'] as String,
-    interestRate: map['interest_rate'] as double?,
-    interestType: map['interest_type'] as String,
-    lastInterestAppliedDate: map['last_interest_applied_date'] != null
+    return Account(
+      id: map['id'] as int?,
+      name: map['name'] as String?,
+      type: map['type'] as String,
+      provider: map['provider'] as String,
+      balance: map['balance'] as double,
+      currency: map['currency'] as String,
+      interestRate: map['interest_rate'] as double?,
+      interestType: map['interest_type'] as String,
+      lastInterestAppliedDate: map['last_interest_applied_date'] != null
           ? DateTime.parse(map['last_interest_applied_date'] as String)
           : null,
-    iconKey: map['icon_key'] as String?,
-    createdAt: DateTime.parse(map['created_at'] as String),
-  );
-}
+      iconKey: map['icon_key'] as String?,
+      createdAt: DateTime.parse(map['created_at'] as String),
+    );
+  }
 
   // Updates balance after a transaction
   Account copyWith({
@@ -74,7 +73,7 @@ class Account {
     double? interestRate,
     String? interestType,
     DateTime? lastInterestAppliedDate,
-    String? iconKey,  
+    String? iconKey,
     DateTime? createdAt,
   }) {
     return Account(
@@ -86,7 +85,8 @@ class Account {
       currency: currency ?? this.currency,
       interestRate: interestRate ?? this.interestRate,
       interestType: interestType ?? this.interestType,
-      lastInterestAppliedDate: lastInterestAppliedDate ?? this.lastInterestAppliedDate,
+      lastInterestAppliedDate:
+          lastInterestAppliedDate ?? this.lastInterestAppliedDate,
       iconKey: iconKey ?? this.iconKey,
       createdAt: createdAt ?? this.createdAt,
     );

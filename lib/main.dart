@@ -7,11 +7,7 @@ import 'screens/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    const ProviderScope(
-      child: PitakaApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: PitakaApp()));
 }
 
 class PitakaApp extends StatelessWidget {
@@ -22,10 +18,10 @@ class PitakaApp extends StatelessWidget {
     return MaterialApp(
       title: 'Pitaka',
       debugShowCheckedModeBanner: false,
-      
-      theme: AppTheme.lightTheme, 
-      
-      home: const HomeShell(), 
+
+      theme: AppTheme.lightTheme,
+
+      home: const HomeShell(),
     );
   }
 }

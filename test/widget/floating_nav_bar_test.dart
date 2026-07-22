@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pitaka/widgets/floating_nav_bar.dart';
 
 void main() {
-  testWidgets('FloatingNavBar toggles icon to close when menu is open', (WidgetTester tester) async {
+  testWidgets('FloatingNavBar toggles icon to close when menu is open', (
+    WidgetTester tester,
+  ) async {
     bool isMenuOpen = false;
 
     await tester.pumpWidget(

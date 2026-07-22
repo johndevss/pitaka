@@ -11,7 +11,7 @@ class AppTheme {
   static const Color secondaryGold = Color(0xffd9a441);
   static const Color backgroundGreenish = Color(0xfff5f7f5);
   static const Color surfaceWhite = Color(0xffffffff);
-  
+
   static const Color successGreen = Color(0xff2e9f5d);
   static const Color warningOrange = Color(0xffe8a317);
   static const Color errorRed = Color(0xffd64545);
@@ -25,7 +25,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: backgroundGreenish,
-      
+
       // Color Scheme Mapping
       colorScheme: const ColorScheme.light(
         primary: primaryMalachite,
@@ -49,28 +49,33 @@ class AppTheme {
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: primaryMalachite,
-          foregroundColor: surfaceWhite,
-          minimumSize: const Size.fromHeight(48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16), // 16px Button Radius
-          ),
-          elevation: 0,
-        ).copyWith(
-          // Simulating the hover color state change
-          overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
-            if (states.contains(WidgetState.hovered) || states.contains(WidgetState.pressed)) {
-              return primaryHover;
-            }
-            return null;
-          }),
-        ),
+        style:
+            ElevatedButton.styleFrom(
+              backgroundColor: primaryMalachite,
+              foregroundColor: surfaceWhite,
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16), // 16px Button Radius
+              ),
+              elevation: 0,
+            ).copyWith(
+              // Simulating the hover color state change
+              overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                if (states.contains(WidgetState.hovered) ||
+                    states.contains(WidgetState.pressed)) {
+                  return primaryHover;
+                }
+                return null;
+              }),
+            ),
       ),
 
       // Base typography adjustment (Using system fallbacks if custom fonts aren't loaded yet)
       textTheme: const TextTheme(
-        displayLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+        displayLarge: TextStyle(
+          color: textPrimary,
+          fontWeight: FontWeight.bold,
+        ),
         titleLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.w600),
         bodyLarge: TextStyle(color: textPrimary),
         bodyMedium: TextStyle(color: textSecondary),

@@ -18,7 +18,10 @@ class DailyLimitDao {
   // READ — all daily limits ever set, most recent first
   Future<List<DailyLimit>> getAllDailyLimits() async {
     final db = await DatabaseHelper.initDb();
-    final result = await db.query('daily_limits', orderBy: 'effective_date DESC');
+    final result = await db.query(
+      'daily_limits',
+      orderBy: 'effective_date DESC',
+    );
     return result.map((map) => DailyLimit.fromMap(map)).toList();
   }
 
@@ -54,10 +57,6 @@ class DailyLimitDao {
   // DELETE
   Future<int> deleteDailyLimit(int id) async {
     final db = await DatabaseHelper.initDb();
-    return await db.delete(
-      'daily_limits',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('daily_limits', where: 'id = ?', whereArgs: [id]);
   }
 }

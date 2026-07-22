@@ -8,20 +8,24 @@ final transactionDaoProvider = Provider<TransactionDao>((ref) {
   return TransactionDao();
 });
 
-final allTransactionsProvider = FutureProvider<List<TransactionModel>>((ref) async {
+final allTransactionsProvider = FutureProvider<List<TransactionModel>>((
+  ref,
+) async {
   final dao = ref.watch(transactionDaoProvider);
   return dao.getAllTransactions();
 });
 
 final transactionsByAccountProvider =
     FutureProvider.family<List<TransactionModel>, int>((ref, accountId) async {
-  ref.watch(allTransactionsProvider);
+      ref.watch(allTransactionsProvider);
 
-  final dao = ref.watch(transactionDaoProvider);
-  return dao.getTransactionsByAccount(accountId);
-});
+      final dao = ref.watch(transactionDaoProvider);
+      return dao.getTransactionsByAccount(accountId);
+    });
 
-final todayTransactionsProvider = FutureProvider<List<TransactionModel>>((ref) async {
+final todayTransactionsProvider = FutureProvider<List<TransactionModel>>((
+  ref,
+) async {
   final dao = ref.watch(transactionDaoProvider);
   return dao.getTodayTransactions();
 });

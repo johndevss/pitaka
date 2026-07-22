@@ -5,13 +5,11 @@ import 'package:pitaka/main.dart';
 import 'package:pitaka/widgets/floating_nav_bar.dart';
 
 void main() {
-  testWidgets('Pitaka App smoke test - layout renders successfully', (WidgetTester tester) async {
+  testWidgets('Pitaka App smoke test - layout renders successfully', (
+    WidgetTester tester,
+  ) async {
     // Build app with ProviderScope
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: PitakaApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: PitakaApp()));
 
     // Verify FloatingNavBar exists
     expect(find.byType(FloatingNavBar), findsOneWidget);

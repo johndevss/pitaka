@@ -4,7 +4,7 @@ class TransactionModel {
   final int? id;
   final int accountId;
   final double amount;
-  final String? category; 
+  final String? category;
   final String? note;
   final DateTime createdAt;
 

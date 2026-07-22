@@ -11,16 +11,32 @@ import '../utils/currency_formatter.dart';
 // Quick category shortcuts — expand this list as needed.
 // icon + label only; category string saved is the label.
 const List<_CategoryOption> _quickCategories = [
-  _CategoryOption(label: 'Food', icon: Icons.restaurant_rounded, color: Color(0xFFD9A441)),
-  _CategoryOption(label: 'Transport', icon: Icons.directions_car_rounded, color: Color(0xFF1F8A5B)),
-  _CategoryOption(label: 'Bills', icon: Icons.receipt_long_rounded, color: Color(0xFFD64545)),
-  _CategoryOption(label: 'Shopping', icon: Icons.shopping_bag_rounded, color: Color(0xFF3AA76D)),
+  _CategoryOption(
+    label: 'Food',
+    icon: Icons.restaurant_rounded,
+    color: Color(0xFFD9A441),
+  ),
+  _CategoryOption(
+    label: 'Transport',
+    icon: Icons.directions_car_rounded,
+    color: Color(0xFF1F8A5B),
+  ),
+  _CategoryOption(
+    label: 'Bills',
+    icon: Icons.receipt_long_rounded,
+    color: Color(0xFFD64545),
+  ),
+  _CategoryOption(
+    label: 'Shopping',
+    icon: Icons.shopping_bag_rounded,
+    color: Color(0xFF3AA76D),
+  ),
 ];
 
 class ExpenseScreen extends ConsumerStatefulWidget {
   final bool initialIsExpense;
-  
-  const ExpenseScreen({super.key, this.initialIsExpense = true}); 
+
+  const ExpenseScreen({super.key, this.initialIsExpense = true});
 
   @override
   ConsumerState<ExpenseScreen> createState() => _ExpenseScreenState();
@@ -76,15 +92,15 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
 
   Future<void> _save() async {
     if (_amountValue <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter an amount first')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter an amount first')));
       return;
     }
     if (_selectedAccount == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pick an account')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Pick an account')));
       return;
     }
 
@@ -94,13 +110,17 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
     // NOTE: assumes TransactionModel's constructor mirrors Account's pattern
     // (id nullable, createdAt required). Adjust field names here if
     // transaction_model.dart differs from this assumption.
-    await dao.insertTransaction(TransactionModel(
-      accountId: _selectedAccount!.id!,
-      amount: signedAmount,
-      category: _selectedCategory,
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-      createdAt: DateTime.now(),
-    ));
+    await dao.insertTransaction(
+      TransactionModel(
+        accountId: _selectedAccount!.id!,
+        amount: signedAmount,
+        category: _selectedCategory,
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
+        createdAt: DateTime.now(),
+      ),
+    );
 
     // Invalidate every provider whose data this transaction affects.
     ref.invalidate(allTransactionsProvider);
@@ -145,8 +165,12 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
             padding: const EdgeInsets.only(right: 12),
             child: IconButton(
               icon: Icon(
-                _isExpense ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
-                color: _isExpense ? const Color(0xFFD64545) : const Color(0xFF2E9F5D),
+                _isExpense
+                    ? Icons.arrow_downward_rounded
+                    : Icons.arrow_upward_rounded,
+                color: _isExpense
+                    ? const Color(0xFFD64545)
+                    : const Color(0xFF2E9F5D),
               ),
               onPressed: () => setState(() => _isExpense = !_isExpense),
               tooltip: 'Switch to ${_isExpense ? 'income' : 'expense'}',
@@ -189,7 +213,10 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -213,7 +240,10 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                       controller: _noteController,
                       decoration: InputDecoration(
                         hintText: 'e.g. Lunch, Grab ride, groceries',
-                        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: const EdgeInsets.only(bottom: 10),
@@ -263,7 +293,9 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        color: isSelected ? cat.color.withValues(alpha: 0.15) : Colors.white,
+                        color: isSelected
+                            ? cat.color.withValues(alpha: 0.15)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isSelected ? cat.color : Colors.grey.shade200,
@@ -278,7 +310,9 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                             cat.label,
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
                               color: const Color(0xFF222222),
                             ),
                           ),
@@ -307,7 +341,8 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                         // Default to first account once loaded, if none picked yet.
                         if (_selectedAccount == null && accounts.isNotEmpty) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) setState(() => _selectedAccount = accounts.first);
+                            if (mounted)
+                              setState(() => _selectedAccount = accounts.first);
                           });
                         }
                         return Container(
@@ -320,12 +355,16 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                             child: DropdownButton<Account>(
                               isExpanded: true,
                               value: _selectedAccount,
-                              icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                              ),
                               items: accounts.map((acc) {
                                 return DropdownMenuItem(
                                   value: acc,
                                   child: Text(
-                                    acc.name?.isNotEmpty == true ? acc.name! : acc.provider,
+                                    acc.name?.isNotEmpty == true
+                                        ? acc.name!
+                                        : acc.provider,
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -334,14 +373,17 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                                   ),
                                 );
                               }).toList(),
-                              onChanged: (acc) => setState(() => _selectedAccount = acc),
+                              onChanged: (acc) =>
+                                  setState(() => _selectedAccount = acc),
                             ),
                           ),
                         );
                       },
                       loading: () => const SizedBox(
                         height: 48,
-                        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       ),
                       error: (err, stack) => const SizedBox.shrink(),
                     ),
@@ -382,7 +424,11 @@ class _CategoryOption {
   final IconData icon;
   final Color color;
 
-  const _CategoryOption({required this.label, required this.icon, required this.color});
+  const _CategoryOption({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
 }
 
 class _NumericKeypad extends StatelessWidget {
@@ -410,7 +456,10 @@ class _NumericKeypad extends StatelessWidget {
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: _KeypadButton(keyLabel: key, onTap: () => onKeyTap(key)),
+                    child: _KeypadButton(
+                      keyLabel: key,
+                      onTap: () => onKeyTap(key),
+                    ),
                   ),
                 );
               }).toList(),
@@ -442,7 +491,11 @@ class _KeypadButton extends StatelessWidget {
           height: 56,
           child: Center(
             child: isBackspace
-                ? Icon(Icons.backspace_outlined, size: 20, color: Colors.grey.shade600)
+                ? Icon(
+                    Icons.backspace_outlined,
+                    size: 20,
+                    color: Colors.grey.shade600,
+                  )
                 : Text(
                     keyLabel,
                     style: const TextStyle(

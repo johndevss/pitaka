@@ -33,9 +33,14 @@ class AccountsScreen extends ConsumerWidget {
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
               style: TextButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                backgroundColor: theme.colorScheme.primary.withValues(
+                  alpha: 0.1,
+                ),
                 foregroundColor: theme.colorScheme.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 shape: const StadiumBorder(),
               ),
             ),

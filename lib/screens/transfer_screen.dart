@@ -52,15 +52,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   Future<void> _saveTransfer() async {
     if (_amountValue <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter an amount first')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter an amount first')));
       return;
     }
     if (_fromAccount == null || _toAccount == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pick both accounts')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Pick both accounts')));
       return;
     }
     if (_fromAccount!.id == _toAccount!.id) {
@@ -70,11 +70,13 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       return;
     }
 
-    // TODO: Create a DAO method later to handle transferring money 
-    // Usually, this is done by inserting an expense (-) into _fromAccount 
+    // TODO: Create a DAO method later to handle transferring money
+    // Usually, this is done by inserting an expense (-) into _fromAccount
     // and an income (+) into _toAccount as a single database transaction.
-    
-    print('Transferring $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}');
+
+    print(
+      'Transferring $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',
+    );
 
     if (!mounted) return;
     Navigator.of(context).pop();
@@ -171,7 +173,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -195,7 +200,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                       controller: _noteController,
                       decoration: InputDecoration(
                         hintText: 'e.g. Savings deposit',
-                        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: const EdgeInsets.only(bottom: 10),
@@ -228,10 +236,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                   ),
                   child: const Text(
                     'Confirm Transfer',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -293,7 +298,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             ),
             loading: () => const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+              child: SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
             ),
             error: (_, _) => const SizedBox.shrink(),
           ),
@@ -328,7 +337,10 @@ class _NumericKeypad extends StatelessWidget {
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: _KeypadButton(keyLabel: key, onTap: () => onKeyTap(key)),
+                    child: _KeypadButton(
+                      keyLabel: key,
+                      onTap: () => onKeyTap(key),
+                    ),
                   ),
                 );
               }).toList(),
@@ -358,7 +370,11 @@ class _KeypadButton extends StatelessWidget {
           height: 56,
           child: Center(
             child: isBackspace
-                ? Icon(Icons.backspace_outlined, size: 20, color: Colors.grey.shade600)
+                ? Icon(
+                    Icons.backspace_outlined,
+                    size: 20,
+                    color: Colors.grey.shade600,
+                  )
                 : Text(
                     keyLabel,
                     style: const TextStyle(
