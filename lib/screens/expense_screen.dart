@@ -341,8 +341,9 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                         // Default to first account once loaded, if none picked yet.
                         if (_selectedAccount == null && accounts.isNotEmpty) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted)
+                            if (mounted) {
                               setState(() => _selectedAccount = accounts.first);
+                            }
                           });
                         }
                         return Container(

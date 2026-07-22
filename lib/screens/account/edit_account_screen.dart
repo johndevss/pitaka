@@ -300,7 +300,7 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: transactions.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final t = transactions[index];
                       return _AccountTransactionTile(transaction: t);

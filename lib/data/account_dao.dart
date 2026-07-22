@@ -19,7 +19,6 @@ class AccountDao {
   Future<List<Account>> getAllAccounts() async {
     final db = await DatabaseHelper.initDb();
     final result = await db.query('accounts', orderBy: 'created_at DESC');
-    print('Raw accounts from DB: $result'); // temp debug — remove after
 
     return result.map((map) => Account.fromMap(map)).toList();
   }
