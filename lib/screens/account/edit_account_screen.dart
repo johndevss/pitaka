@@ -38,7 +38,9 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
     _currentAccount = widget.account;
     _nameController = TextEditingController(text: widget.account.name ?? '');
     _hasInterest = widget.account.interestType != 'none';
-    _selectedInterestType = _hasInterest ? widget.account.interestType : 'daily';
+    _selectedInterestType = _hasInterest
+        ? widget.account.interestType
+        : 'daily';
     _interestController = TextEditingController(
       text: widget.account.interestRate != null
           ? widget.account.interestRate.toString()
@@ -61,12 +63,14 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
 
     final updatedAccount = _currentAccount.copyWith(
       name: _nameController.text.trim(),
-      interestRate: ((accountType == 'bank' || accountType == 'e-wallet') &&
+      interestRate:
+          ((accountType == 'bank' || accountType == 'e-wallet') &&
               _hasInterest &&
               _interestController.text.trim().isNotEmpty)
           ? double.tryParse(_interestController.text)
           : null,
-      interestType: ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest)
+      interestType:
+          ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest)
           ? _selectedInterestType
           : 'none',
     );
@@ -157,13 +161,19 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
           _selectedInterestType = value;
         });
       },
-      selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+      selectedColor: Theme.of(
+        context,
+      ).colorScheme.primary.withValues(alpha: 0.15),
       labelStyle: TextStyle(
-        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade700,
+        color: isSelected
+            ? Theme.of(context).colorScheme.primary
+            : Colors.grey.shade700,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       side: BorderSide(
-        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
+        color: isSelected
+            ? Theme.of(context).colorScheme.primary
+            : Colors.grey.shade300,
       ),
     );
   }
@@ -171,12 +181,14 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final balanceAsync = ref.watch(accountBalanceProvider(_currentAccount.id!));
-    final transactionsAsync =
-        ref.watch(transactionsByAccountProvider(_currentAccount.id!));
+    final transactionsAsync = ref.watch(
+      transactionsByAccountProvider(_currentAccount.id!),
+    );
     final isInterestEligible =
         _currentAccount.type == 'bank' || _currentAccount.type == 'e-wallet';
 
-    final displayName = _currentAccount.name != null && _currentAccount.name!.isNotEmpty
+    final displayName =
+        _currentAccount.name != null && _currentAccount.name!.isNotEmpty
         ? _currentAccount.name!
         : _currentAccount.provider.toUpperCase();
 
@@ -288,7 +300,7 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: transactions.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final t = transactions[index];
                       return _AccountTransactionTile(transaction: t);
@@ -325,7 +337,9 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                         title: const Text(
                           'This account earns interest',
                           style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         value: _hasInterest,
                         onChanged: (value) {
@@ -341,11 +355,11 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                         const SizedBox(height: 8),
                         Text(
                           'Crediting Frequency',
-                          style:
-                              Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey.shade700,
-                                  ),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade700,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Wrap(
@@ -368,7 +382,8 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                             border: OutlineInputBorder(),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
+                            decimal: true,
+                          ),
                           validator: (value) {
                             if (!_hasInterest) return null;
                             if (value == null || value.trim().isEmpty) {
@@ -390,7 +405,9 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                         child: Text(
                           'Save Changes',
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -405,10 +422,9 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Theme.of(context).colorScheme.error,
                         side: BorderSide(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .error
-                              .withValues(alpha: 0.5),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.error.withValues(alpha: 0.5),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -454,7 +470,9 @@ class _AccountTransactionTile extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isIncome ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+              isIncome
+                  ? Icons.arrow_downward_rounded
+                  : Icons.arrow_upward_rounded,
               size: 18,
               color: color,
             ),
@@ -476,7 +494,8 @@ class _AccountTransactionTile extends StatelessWidget {
                   DateFormat('MMM d, y · h:mm a').format(transaction.createdAt),
                   style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                 ),
-                if (transaction.note != null && transaction.note!.isNotEmpty) ...[
+                if (transaction.note != null &&
+                    transaction.note!.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     transaction.note!,

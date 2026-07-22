@@ -14,12 +14,17 @@ final accountsProvider = FutureProvider<List<Account>>((ref) async {
 });
 
 // Computed balance for a single account (starting balance + all transactions)
-final accountBalanceProvider = FutureProvider.family<double, int>((ref, accountId) async {
+final accountBalanceProvider = FutureProvider.family<double, int>((
+  ref,
+  accountId,
+) async {
   final dao = ref.watch(accountDaoProvider);
   return dao.getCurrentBalance(accountId);
 });
 
-final totalEquityByCurrencyProvider = FutureProvider<Map<String, double>>((ref) async {
+final totalEquityByCurrencyProvider = FutureProvider<Map<String, double>>((
+  ref,
+) async {
   final dao = ref.watch(accountDaoProvider);
   final accounts = await dao.getAllAccounts();
 

@@ -19,7 +19,6 @@ class AccountDao {
   Future<List<Account>> getAllAccounts() async {
     final db = await DatabaseHelper.initDb();
     final result = await db.query('accounts', orderBy: 'created_at DESC');
-      print('Raw accounts from DB: $result'); // temp debug — remove after
 
     return result.map((map) => Account.fromMap(map)).toList();
   }
@@ -27,11 +26,7 @@ class AccountDao {
   // READ — get a single account by id
   Future<Account?> getAccountById(int id) async {
     final db = await DatabaseHelper.initDb();
-    final result = await db.query(
-      'accounts',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    final result = await db.query('accounts', where: 'id = ?', whereArgs: [id]);
     if (result.isEmpty) return null;
     return Account.fromMap(result.first);
   }
@@ -50,11 +45,7 @@ class AccountDao {
   // DELETE
   Future<int> deleteAccount(int id) async {
     final db = await DatabaseHelper.initDb();
-    return await db.delete(
-      'accounts',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('accounts', where: 'id = ?', whereArgs: [id]);
   }
 
   // Method to calculate the current balance of an account by summing its transactions

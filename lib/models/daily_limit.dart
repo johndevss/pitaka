@@ -5,11 +5,7 @@ class DailyLimit {
   final double amount;
   final DateTime effectiveDate;
 
-  DailyLimit({
-    this.id,
-    required this.amount,
-    required this.effectiveDate,
-  });
+  DailyLimit({this.id, required this.amount, required this.effectiveDate});
 
   Map<String, dynamic> toMap() {
     return {
@@ -27,11 +23,7 @@ class DailyLimit {
     );
   }
 
-  DailyLimit copyWith({
-    int? id,
-    double? amount,
-    DateTime? effectiveDate,
-  }) {
+  DailyLimit copyWith({int? id, double? amount, DateTime? effectiveDate}) {
     return DailyLimit(
       id: id ?? this.id,
       amount: amount ?? this.amount,

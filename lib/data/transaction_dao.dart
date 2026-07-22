@@ -39,7 +39,14 @@ class TransactionDao {
     final db = await DatabaseHelper.initDb();
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day).toIso8601String();
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59).toIso8601String();
+    final endOfDay = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      23,
+      59,
+      59,
+    ).toIso8601String();
 
     final result = await db.query(
       'transactions',
@@ -64,10 +71,6 @@ class TransactionDao {
   // DELETE
   Future<int> deleteTransaction(int id) async {
     final db = await DatabaseHelper.initDb();
-    return await db.delete(
-      'transactions',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
   }
 }

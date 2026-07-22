@@ -65,7 +65,11 @@ class DatabaseHelper {
     ''');
   }
 
-  static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  static Future<void> _onUpgrade(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
     // Example for later: if (oldVersion < 2) { await db.execute('ALTER TABLE ...'); }
   }
 }

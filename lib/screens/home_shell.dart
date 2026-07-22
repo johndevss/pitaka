@@ -25,13 +25,9 @@ class _HomeShellState extends State<HomeShell> {
       case NavTab.wallet:
         return const AccountsScreen();
       case NavTab.plan:
-        return const Scaffold(
-          body: Center(child: Text('Plan (planned)')),
-        );
+        return const Scaffold(body: Center(child: Text('Plan (planned)')));
       case NavTab.history:
-        return const Scaffold(
-          body: Center(child: Text('History (planned)')),
-        );
+        return const Scaffold(body: Center(child: Text('History (planned)')));
     }
   }
 
@@ -44,7 +40,9 @@ class _HomeShellState extends State<HomeShell> {
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
       barrierColor: Colors.transparent, // 1. No background overlay shadow
-      transitionDuration: const Duration(milliseconds: 150), // 2. Faster animation speed (150ms)
+      transitionDuration: const Duration(
+        milliseconds: 150,
+      ), // 2. Faster animation speed (150ms)
       pageBuilder: (context, animation, secondaryAnimation) {
         return Align(
           alignment: Alignment.bottomRight,
@@ -58,7 +56,9 @@ class _HomeShellState extends State<HomeShell> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.grey.shade200), // Clean border instead of shadow
+                  border: Border.all(
+                    color: Colors.grey.shade200,
+                  ), // Clean border instead of shadow
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -70,7 +70,10 @@ class _HomeShellState extends State<HomeShell> {
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const ExpenseScreen(initialIsExpense: false)),
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const ExpenseScreen(initialIsExpense: false),
+                          ),
                         );
                       },
                     ),
@@ -82,7 +85,10 @@ class _HomeShellState extends State<HomeShell> {
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const ExpenseScreen(initialIsExpense: true)),
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const ExpenseScreen(initialIsExpense: true),
+                          ),
                         );
                       },
                     ),
@@ -94,7 +100,9 @@ class _HomeShellState extends State<HomeShell> {
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const TransferScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const TransferScreen(),
+                          ),
                         );
                       },
                     ),
@@ -112,10 +120,7 @@ class _HomeShellState extends State<HomeShell> {
             curve: Curves.easeOutCubic, // Fast and snappy exit/entry
           ),
           alignment: Alignment.bottomRight,
-          child: FadeTransition(
-            opacity: anim,
-            child: child,
-          ),
+          child: FadeTransition(opacity: anim, child: child),
         );
       },
     );

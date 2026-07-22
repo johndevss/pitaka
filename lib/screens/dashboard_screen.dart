@@ -92,7 +92,7 @@ class DashboardScreen extends ConsumerWidget {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemCount: accounts.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
                       itemBuilder: (context, index) {
                         return SizedBox(
                           width: 160,
@@ -129,10 +129,7 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Divider(
-                        color: Colors.grey.shade300,
-                        thickness: 1,
-                      ),
+                      child: Divider(color: Colors.grey.shade300, thickness: 1),
                     ),
                   ],
                 ),
@@ -160,35 +157,32 @@ class DashboardScreen extends ConsumerWidget {
                 final dateKeys = grouped.keys.toList();
 
                 return SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final dateKey = dateKeys[index];
-                      final dayTransactions = grouped[dateKey]!;
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final dateKey = dateKeys[index];
+                    final dayTransactions = grouped[dateKey]!;
 
-                      return Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              dateKey,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade500,
-                                letterSpacing: 0.4,
-                              ),
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            dateKey,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade500,
+                              letterSpacing: 0.4,
                             ),
-                            const SizedBox(height: 8),
-                            ...dayTransactions.map(
-                              (t) => _TransactionTile(transaction: t),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    childCount: dateKeys.length,
-                  ),
+                          ),
+                          const SizedBox(height: 8),
+                          ...dayTransactions.map(
+                            (t) => _TransactionTile(transaction: t),
+                          ),
+                        ],
+                      ),
+                    );
+                  }, childCount: dateKeys.length),
                 );
               },
               loading: () => const SliverToBoxAdapter(
@@ -213,8 +207,10 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Map<String, List<TransactionModel>> _groupByDate(
-    List<TransactionModel> transactions) {
-    final sorted = [...transactions]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    List<TransactionModel> transactions,
+  ) {
+    final sorted = [...transactions]
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     final Map<String, List<TransactionModel>> grouped = {};
 
     for (final t in sorted) {
@@ -292,7 +288,10 @@ class _EquityBadge extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    formatMoney(sortedEntries.first.value, sortedEntries.first.key),
+                    formatMoney(
+                      sortedEntries.first.value,
+                      sortedEntries.first.key,
+                    ),
                     style: const TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
@@ -321,12 +320,13 @@ class _EquityBadge extends StatelessWidget {
             loading: () => const SizedBox(
               height: 32,
               width: 32,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
             ),
-            error: (err, stack) => const Text(
-              '—',
-              style: TextStyle(color: Colors.white70),
-            ),
+            error: (err, stack) =>
+                const Text('—', style: TextStyle(color: Colors.white70)),
           ),
         ],
       ),
@@ -361,7 +361,9 @@ class _TransactionTile extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isIncome ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+              isIncome
+                  ? Icons.arrow_downward_rounded
+                  : Icons.arrow_upward_rounded,
               size: 18,
               color: color,
             ),
@@ -379,7 +381,8 @@ class _TransactionTile extends StatelessWidget {
                     color: Color(0xFF222222),
                   ),
                 ),
-                if (transaction.note != null && transaction.note!.isNotEmpty) ...[
+                if (transaction.note != null &&
+                    transaction.note!.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     transaction.note!,

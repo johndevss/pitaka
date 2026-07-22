@@ -14,12 +14,11 @@ class AddAccountScreen extends ConsumerStatefulWidget {
 
 class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
     with SingleTickerProviderStateMixin {
-  
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _balanceController = TextEditingController();
   final _interestController = TextEditingController();
-  
+
   late TabController _tabController;
   Institution? _selectedInstitution;
   bool _showProviderError = false;
@@ -31,7 +30,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    
+
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {
@@ -64,10 +63,14 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
 
   String _getAccountTypeFromIndex(int index) {
     switch (index) {
-      case 0: return 'e-wallet';
-      case 1: return 'bank';
-      case 2: return 'credit';
-      default: return 'e-wallet';
+      case 0:
+        return 'e-wallet';
+      case 1:
+        return 'bank';
+      case 2:
+        return 'credit';
+      default:
+        return 'e-wallet';
     }
   }
 
@@ -85,28 +88,34 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
     // Stop submission if either check fails
     if (_selectedInstitution == null || !isFormValid) return;
 
-    final dao = ref.read(accountDaoProvider); 
+    final dao = ref.read(accountDaoProvider);
     final accountType = _getAccountTypeFromIndex(_tabController.index);
 
-    await dao.insertAccount(Account(
-      name: _nameController.text.trim(), 
-      type: accountType,
-      provider: _selectedInstitution?.iconKey ?? 'custom', 
-      balance: double.parse(_balanceController.text),
-      iconKey: _selectedInstitution?.iconKey,
-      currency: _selectedInstitution?.currency ?? 'PHP',
-      interestRate: ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest && _interestController.text.trim().isNotEmpty)
-        ? double.tryParse(_interestController.text)
-        : null,
-      interestType: ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest)
-        ? _selectedInterestType
-        : 'none',
-      createdAt: DateTime.now(),
-    ));
+    await dao.insertAccount(
+      Account(
+        name: _nameController.text.trim(),
+        type: accountType,
+        provider: _selectedInstitution?.iconKey ?? 'custom',
+        balance: double.parse(_balanceController.text),
+        iconKey: _selectedInstitution?.iconKey,
+        currency: _selectedInstitution?.currency ?? 'PHP',
+        interestRate:
+            ((accountType == 'bank' || accountType == 'e-wallet') &&
+                _hasInterest &&
+                _interestController.text.trim().isNotEmpty)
+            ? double.tryParse(_interestController.text)
+            : null,
+        interestType:
+            ((accountType == 'bank' || accountType == 'e-wallet') &&
+                _hasInterest)
+            ? _selectedInterestType
+            : 'none',
+        createdAt: DateTime.now(),
+      ),
+    );
 
     ref.invalidate(accountsProvider);
     ref.invalidate(totalEquityByCurrencyProvider);
-
 
     if (!mounted) return;
     Navigator.of(context).pop();
@@ -122,13 +131,19 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
           _selectedInterestType = value;
         });
       },
-      selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+      selectedColor: Theme.of(
+        context,
+      ).colorScheme.primary.withValues(alpha: 0.15),
       labelStyle: TextStyle(
-        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade700,
+        color: isSelected
+            ? Theme.of(context).colorScheme.primary
+            : Colors.grey.shade700,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       side: BorderSide(
-        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
+        color: isSelected
+            ? Theme.of(context).colorScheme.primary
+            : Colors.grey.shade300,
       ),
     );
   }
@@ -160,9 +175,9 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
               Text(
                 'Select Provider',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade700,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade700,
+                ),
               ),
               const SizedBox(height: 10),
 
@@ -219,7 +234,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                         ),
                       );
                     }
-                    
+
                     final institution = filteredInstitutions[index];
                     final isSelected = _selectedInstitution == institution;
 
@@ -234,12 +249,14 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                         width: 85,
                         margin: const EdgeInsets.only(right: 10),
                         decoration: BoxDecoration(
-                          color: isSelected 
-                              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.05)
+                          color: isSelected
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.05)
                               : Colors.transparent,
                           border: Border.all(
-                            color: isSelected 
-                                ? Theme.of(context).colorScheme.primary 
+                            color: isSelected
+                                ? Theme.of(context).colorScheme.primary
                                 : Colors.grey.shade300,
                             width: isSelected ? 2 : 1,
                           ),
@@ -257,8 +274,8 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Icon(
-                                    _tabController.index == 0 
-                                        ? Icons.account_balance_wallet 
+                                    _tabController.index == 0
+                                        ? Icons.account_balance_wallet
                                         : Icons.account_balance,
                                     size: 30,
                                     color: Colors.grey.shade400,
@@ -270,8 +287,10 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                             Text(
                               institution.name,
                               style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 11,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
                               textAlign: TextAlign.center,
                               overflow: TextOverflow.ellipsis,
@@ -309,13 +328,15 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
               TextFormField(
                 controller: _balanceController,
                 decoration: InputDecoration(
-                  labelText: _tabController.index == 2 
-                      ? 'Current Outstanding Balance (Debt)' 
+                  labelText: _tabController.index == 2
+                      ? 'Current Outstanding Balance (Debt)'
                       : 'Starting Balance',
                   prefixText: '${currencySymbol(currentCurrency)} ',
                   border: const OutlineInputBorder(),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter a starting balance';
@@ -326,7 +347,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                   return null;
                 },
               ),
-              
+
               if (_tabController.index == 0 || _tabController.index == 1) ...[
                 const SizedBox(height: 16),
                 SwitchListTile(
@@ -351,9 +372,9 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                   Text(
                     'Crediting Frequency',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade700,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade700,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -375,7 +396,9 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                       hintText: 'e.g. 4.0',
                       border: OutlineInputBorder(),
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     validator: (value) {
                       if (!_hasInterest) return null;
                       if (value == null || value.trim().isEmpty) {

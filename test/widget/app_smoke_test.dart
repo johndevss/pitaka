@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pitaka/main.dart';
 import 'package:pitaka/widgets/floating_nav_bar.dart';
 
 void main() {
-  testWidgets('Pitaka App smoke test - layout renders successfully', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const PitakaApp());
+  testWidgets('Pitaka App smoke test - layout renders successfully', (
+    WidgetTester tester,
+  ) async {
+    // Build app with ProviderScope
+    await tester.pumpWidget(const ProviderScope(child: PitakaApp()));
 
-    // Verify that the initial Home state text displays correctly
-    expect(find.text('Current Screen: HOME'), findsOneWidget);
-
-    // Verify that the FloatingNavBar component exists on screen
+    // Verify FloatingNavBar exists
     expect(find.byType(FloatingNavBar), findsOneWidget);
 
-    // Verify that the tab options exist within the layout
+    // Verify navigation tabs render
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Wallet'), findsOneWidget);
     expect(find.text('Plan'), findsOneWidget);
     expect(find.text('History'), findsOneWidget);
 
-    // Verify that our add button icon renders
+    // Verify add button icon renders
     expect(find.byIcon(Icons.add_rounded), findsOneWidget);
   });
 }
