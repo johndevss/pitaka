@@ -2,9 +2,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 import '../../providers/account_providers.dart';
 import '../../models/account.dart';
 import '../../utils/currency_formatter.dart';
+
+final logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 5,
+    lineLength: 50,
+    colors: true,
+    printEmojis: true,
+  ),
+);
 
 class TransferScreen extends ConsumerStatefulWidget {
   const TransferScreen({super.key});
@@ -74,7 +85,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     // Usually, this is done by inserting an expense (-) into _fromAccount
     // and an income (+) into _toAccount as a single database transaction.
 
-    print(
+    logger.w(
       'Transferring $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',
     );
 

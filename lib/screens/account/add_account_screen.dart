@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 import '../../providers/account_providers.dart';
 import '../../models/account.dart';
 import '../../data/institutions.dart';
 import '../../utils/currency_formatter.dart';
+
+final logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 5,
+    lineLength: 50,
+    colors: true,
+    printEmojis: true,
+  ),
+);
 
 class AddAccountScreen extends ConsumerStatefulWidget {
   const AddAccountScreen({super.key});
@@ -86,33 +97,36 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
     final isFormValid = _formKey.currentState!.validate();
 
     // Stop submission if either check fails
-    if (_selectedInstitution == null || !isFormValid) return;
+    if (_selectedInstitution == null || !isFormValid) {
+      logger.w("Account submission blocked due to validation errors.");
+      return;
+    }
 
     final dao = ref.read(accountDaoProvider);
     final accountType = _getAccountTypeFromIndex(_tabController.index);
 
-    await dao.insertAccount(
-      Account(
-        name: _nameController.text.trim(),
-        type: accountType,
-        provider: _selectedInstitution?.iconKey ?? 'custom',
-        balance: double.parse(_balanceController.text),
-        iconKey: _selectedInstitution?.iconKey,
-        currency: _selectedInstitution?.currency ?? 'PHP',
-        interestRate:
-            ((accountType == 'bank' || accountType == 'e-wallet') &&
-                _hasInterest &&
-                _interestController.text.trim().isNotEmpty)
-            ? double.tryParse(_interestController.text)
-            : null,
-        interestType:
-            ((accountType == 'bank' || accountType == 'e-wallet') &&
-                _hasInterest)
-            ? _selectedInterestType
-            : 'none',
-        createdAt: DateTime.now(),
-      ),
+    final newAccount = Account(
+      name: _nameController.text.trim(),
+      type: accountType,
+      provider: _selectedInstitution?.iconKey ?? 'custom',
+      balance: double.parse(_balanceController.text),
+      iconKey: _selectedInstitution?.iconKey,
+      currency: _selectedInstitution?.currency ?? 'PHP',
+      interestRate:
+          ((accountType == 'bank' || accountType == 'e-wallet') &&
+              _hasInterest &&
+              _interestController.text.trim().isNotEmpty)
+          ? double.tryParse(_interestController.text)
+          : null,
+      interestType:
+          ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest)
+          ? _selectedInterestType
+          : 'none',
+      createdAt: DateTime.now(),
     );
+
+    await dao.insertAccount(newAccount);
+    logger.i("Successfully saved account: ${newAccount.name}");
 
     ref.invalidate(accountsProvider);
     ref.invalidate(totalEquityByCurrencyProvider);
@@ -191,7 +205,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                       return GestureDetector(
                         onTap: () {
                           // TODO: Implement your custom provider modal later
-                          print("Custom provider clicked");
+                          logger.d("Custom provider clicked");
                         },
                         child: Container(
                           width: 85,
