@@ -134,6 +134,7 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: _screenForTab(_selectedTab),
       bottomNavigationBar: FloatingNavBar(
         selectedTab: _selectedTab,
