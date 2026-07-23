@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/account_providers.dart';
 import 'account_card.dart';
-import 'add_account_screen.dart'; // 1. Import your new screen here
+import 'add_account_screen.dart';
 
 class AccountsScreen extends ConsumerWidget {
   const AccountsScreen({super.key});
@@ -19,7 +19,7 @@ class AccountsScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: TextButton.icon(
-              // 2. Change onPressed to push the new screen onto the stack
+              // Change onPressed to push the new screen onto the stack
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
