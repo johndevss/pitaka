@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/account_providers.dart';
 import '../../models/account.dart';
-import '../../utils/currency_formatter.dart'; // Added to format the total sums
+import '../../utils/currency_formatter.dart';
 import 'account_card.dart';
 import 'add_account_screen.dart';
 
