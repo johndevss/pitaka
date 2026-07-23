@@ -65,7 +65,7 @@ class AccountsScreen extends ConsumerWidget {
 
           // Build the scrollable list with our new _CategoryHeader
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
             children: [
               if (eWallets.isNotEmpty) ...[
                 _CategoryHeader(title: 'E-Wallets', accounts: eWallets),
@@ -101,6 +101,7 @@ class AccountsScreen extends ConsumerWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,

@@ -21,6 +21,7 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F5), // Background token
       body: SafeArea(
+        bottom: false,
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
