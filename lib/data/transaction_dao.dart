@@ -4,8 +4,17 @@ import 'package:sqflite/sqflite.dart';
 import '../models/transaction_model.dart';
 import 'database_helper.dart';
 
+class InsufficientBalanceException implements Exception {
+  final double available;
+  final double requested;
+  InsufficientBalanceException(this.available, this.requested);
+
+  @override
+  String toString() =>
+      'InsufficientBalanceException: available $available, requested $requested';
+}
+
 class TransactionDao {
-  // CREATE
   Future<int> insertTransaction(TransactionModel transaction) async {
     final db = await DatabaseHelper.initDb();
     return await db.insert(
@@ -17,10 +26,16 @@ class TransactionDao {
 
   Future<void> transferFunds(
     TransactionModel expense,
-    TransactionModel income,
-  ) async {
+    TransactionModel income, {
+    required double currentBalance,
+  }) async {
+    final requestedAmount = expense.amount.abs();
+
+    if (currentBalance < requestedAmount) {
+      throw InsufficientBalanceException(currentBalance, requestedAmount);
+    }
+
     final db = await DatabaseHelper.initDb();
-    // If one insert failsthe whole block rolls back
     await db.transaction((txn) async {
       await txn.insert(
         'transactions',

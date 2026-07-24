@@ -8,6 +8,7 @@ import '../../models/account.dart';
 import '../../utils/currency_formatter.dart';
 import '../../providers/transaction_providers.dart';
 import '../../models/transaction_model.dart';
+import '../../data/transaction_dao.dart';
 
 final logger = Logger(
   printer: PrettyPrinter(
@@ -110,7 +111,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         ? 'Transfer from ${_fromAccount!.name ?? _fromAccount!.provider}'
         : customNote;
 
-    // 1. Create the deduction for the sender
+    // Create the deduction for the sender
     final expense = TransactionModel(
       accountId: _fromAccount!.id!,
       amount: -_amountValue, // Negative amount
@@ -119,7 +120,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       createdAt: now,
     );
 
-    // 2. Create the addition for the receiver
+    // Create the addition for the receiver
     final income = TransactionModel(
       accountId: _toAccount!.id!,
       amount: _amountValue, // Positive amount
@@ -128,23 +129,46 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       createdAt: now,
     );
 
-    // 3. Execute the safe database transaction
-    await dao.transferFunds(expense, income);
+    try {
+      // fetch the LIVE balance right before transferring
+      final currentBalance = await ref.read(
+        accountBalanceProvider(_fromAccount!.id!).future,
+      );
 
-    logger.i(
-      'Successfully transferred $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',
-    );
+      // Pass currentBalance into transferFunds
+      await dao.transferFunds(expense, income, currentBalance: currentBalance);
 
-    // 4. Invalidate providers so the UI (Dashboard & Accounts) updates immediately
-    ref.invalidate(allTransactionsProvider);
-    ref.invalidate(todayTransactionsProvider);
-    ref.invalidate(accountBalanceProvider(_fromAccount!.id!));
-    ref.invalidate(accountBalanceProvider(_toAccount!.id!));
-    ref.invalidate(totalEquityByCurrencyProvider);
-    ref.invalidate(accountsProvider);
+      logger.i(
+        'Successfully transferred $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',
+      );
 
-    if (!mounted) return;
-    Navigator.of(context).pop();
+      // Invalidate providers so the UI (Dashboard & Accounts) updates immediately
+      ref.invalidate(allTransactionsProvider);
+      ref.invalidate(todayTransactionsProvider);
+      ref.invalidate(accountBalanceProvider(_fromAccount!.id!));
+      ref.invalidate(accountBalanceProvider(_toAccount!.id!));
+      ref.invalidate(totalEquityByCurrencyProvider);
+      ref.invalidate(accountsProvider);
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } on InsufficientBalanceException catch (e) {
+      logger.w('Transfer blocked: insufficient balance');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Insufficient balance. Available: ${currencySymbol(_fromAccount!.currency)}${e.available.toStringAsFixed(2)}',
+          ),
+        ),
+      );
+    } catch (e, st) {
+      logger.e('Transfer failed', error: e, stackTrace: st);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Transfer failed: $e')));
+    }
   }
 
   @override
