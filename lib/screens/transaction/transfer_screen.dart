@@ -379,13 +379,39 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                 items: accounts.map((acc) {
                   return DropdownMenuItem(
                     value: acc,
-                    child: Text(
-                      acc.name?.isNotEmpty == true ? acc.name! : acc.provider,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: Image.asset(
+                            'assets/icons/institutions/${acc.iconKey}.png',
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.account_balance_wallet,
+                                size: 18,
+                                color: Colors.grey.shade400,
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            acc.name?.isNotEmpty == true
+                                ? acc.name!
+                                : acc.provider,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }).toList(),
