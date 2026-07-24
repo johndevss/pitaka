@@ -103,19 +103,26 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final dao = ref.read(transactionDaoProvider);
     final now = DateTime.now();
 
+    final toDisplayName = (_toAccount!.name?.isNotEmpty == true)
+        ? _toAccount!.name!
+        : _toAccount!.provider;
+    final fromDisplayName = (_fromAccount!.name?.isNotEmpty == true)
+        ? _fromAccount!.name!
+        : _fromAccount!.provider;
+
     final customNote = _noteController.text.trim();
     final expenseNote = customNote.isEmpty
-        ? 'Transfer to ${_toAccount!.name ?? _toAccount!.provider}'
+        ? 'Transfer to $toDisplayName'
         : customNote;
     final incomeNote = customNote.isEmpty
-        ? 'Transfer from ${_fromAccount!.name ?? _fromAccount!.provider}'
+        ? 'Transfer from $fromDisplayName'
         : customNote;
 
     // Create the deduction for the sender
     final expense = TransactionModel(
       accountId: _fromAccount!.id!,
       amount: -_amountValue, // Negative amount
-      category: 'Transfer',
+      category: 'Transfer Out',
       note: expenseNote,
       createdAt: now,
     );
@@ -124,7 +131,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final income = TransactionModel(
       accountId: _toAccount!.id!,
       amount: _amountValue, // Positive amount
-      category: 'Transfer',
+      category: 'Transfer In',
       note: incomeNote,
       createdAt: now,
     );
