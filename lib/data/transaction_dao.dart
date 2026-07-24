@@ -15,6 +15,26 @@ class TransactionDao {
     );
   }
 
+  Future<void> transferFunds(
+    TransactionModel expense,
+    TransactionModel income,
+  ) async {
+    final db = await DatabaseHelper.initDb();
+    // If one insert failsthe whole block rolls back
+    await db.transaction((txn) async {
+      await txn.insert(
+        'transactions',
+        expense.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        'transactions',
+        income.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    });
+  }
+
   // READ — all transactions, most recent first
   Future<List<TransactionModel>> getAllTransactions() async {
     final db = await DatabaseHelper.initDb();

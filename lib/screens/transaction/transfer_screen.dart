@@ -6,6 +6,8 @@ import 'package:logger/logger.dart';
 import '../../providers/account_providers.dart';
 import '../../models/account.dart';
 import '../../utils/currency_formatter.dart';
+import '../../providers/transaction_providers.dart';
+import '../../models/transaction_model.dart';
 
 final logger = Logger(
   printer: PrettyPrinter(
@@ -81,13 +83,65 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       return;
     }
 
-    // TODO: Create a DAO method later to handle transferring money
-    // Usually, this is done by inserting an expense (-) into _fromAccount
-    // and an income (+) into _toAccount as a single database transaction.
-
-    logger.w(
-      'Transferring $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',
+    final currentBalance = await ref.read(
+      accountBalanceProvider(_fromAccount!.id!).future,
     );
+
+    if (currentBalance < _amountValue) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Insufficient balance. Available: ${currencySymbol(_fromAccount!.currency)}${currentBalance.toStringAsFixed(2)}',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final dao = ref.read(transactionDaoProvider);
+    final now = DateTime.now();
+
+    final customNote = _noteController.text.trim();
+    final expenseNote = customNote.isEmpty
+        ? 'Transfer to ${_toAccount!.name ?? _toAccount!.provider}'
+        : customNote;
+    final incomeNote = customNote.isEmpty
+        ? 'Transfer from ${_fromAccount!.name ?? _fromAccount!.provider}'
+        : customNote;
+
+    // 1. Create the deduction for the sender
+    final expense = TransactionModel(
+      accountId: _fromAccount!.id!,
+      amount: -_amountValue, // Negative amount
+      category: 'Transfer',
+      note: expenseNote,
+      createdAt: now,
+    );
+
+    // 2. Create the addition for the receiver
+    final income = TransactionModel(
+      accountId: _toAccount!.id!,
+      amount: _amountValue, // Positive amount
+      category: 'Transfer',
+      note: incomeNote,
+      createdAt: now,
+    );
+
+    // 3. Execute the safe database transaction
+    await dao.transferFunds(expense, income);
+
+    logger.i(
+      'Successfully transferred $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',
+    );
+
+    // 4. Invalidate providers so the UI (Dashboard & Accounts) updates immediately
+    ref.invalidate(allTransactionsProvider);
+    ref.invalidate(todayTransactionsProvider);
+    ref.invalidate(accountBalanceProvider(_fromAccount!.id!));
+    ref.invalidate(accountBalanceProvider(_toAccount!.id!));
+    ref.invalidate(totalEquityByCurrencyProvider);
+    ref.invalidate(accountsProvider);
 
     if (!mounted) return;
     Navigator.of(context).pop();

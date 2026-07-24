@@ -26,6 +26,14 @@ class Account {
     required this.createdAt,
   });
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Account && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+
   // Converts Account object to a Map, to allow sqflite to insert and update rows in the database
   Map<String, dynamic> toMap() {
     return {
