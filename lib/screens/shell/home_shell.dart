@@ -139,6 +139,10 @@ class _HomeShellState extends State<HomeShell> {
       extendBody: true,
       body: NotificationListener<UserScrollNotification>(
         onNotification: (notification) {
+          // Ignore horizontal scrolls (e.g. the accounts card carousel)
+          if (notification.metrics.axis != Axis.vertical) {
+            return false;
+          }
           // Check the scroll direction
           if (notification.direction == ScrollDirection.reverse) {
             // User is scrolling down, hide the nav bar
