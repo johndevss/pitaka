@@ -244,7 +244,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                     child: _buildAccountDropdown(
                       label: 'FROM',
                       value: _fromAccount,
-                      accountsAsync: accountsAsync,
+                      accountsAsync: accountsAsync.whenData(
+                        (accounts) => accounts
+                            .where((a) => a.id != _toAccount?.id)
+                            .toList(),
+                      ),
                       onChanged: (acc) => setState(() => _fromAccount = acc),
                     ),
                   ),
@@ -255,7 +259,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                     child: _buildAccountDropdown(
                       label: 'TO',
                       value: _toAccount,
-                      accountsAsync: accountsAsync,
+                      accountsAsync: accountsAsync.whenData(
+                        (accounts) => accounts
+                            .where((a) => a.id != _fromAccount?.id)
+                            .toList(),
+                      ),
                       onChanged: (acc) => setState(() => _toAccount = acc),
                     ),
                   ),
