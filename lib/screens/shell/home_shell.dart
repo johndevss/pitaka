@@ -6,6 +6,7 @@ import '../account/accounts_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../transaction/expense_screen.dart';
 import '../transaction/transfer_screen.dart';
+import 'package:flutter/rendering.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -17,6 +18,7 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   NavTab _selectedTab = NavTab.home;
   bool _isMenuOpen = false; // Tracks if the floating menu is currently open
+  bool _isNavBarVisible = true; // Tracks if the navigation bar is visible
 
   Widget _screenForTab(NavTab tab) {
     switch (tab) {
@@ -135,12 +137,41 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      body: _screenForTab(_selectedTab),
-      bottomNavigationBar: FloatingNavBar(
-        selectedTab: _selectedTab,
-        isMenuOpen: _isMenuOpen, // Pass the open state down
-        onTabSelected: (tab) => setState(() => _selectedTab = tab),
-        onAddPressed: _onAddPressed,
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: (notification) {
+          // Ignore horizontal scrolls (e.g. the accounts card carousel)
+          if (notification.metrics.axis != Axis.vertical) {
+            return false;
+          }
+          // Check the scroll direction
+          if (notification.direction == ScrollDirection.reverse) {
+            // User is scrolling down, hide the nav bar
+            if (_isNavBarVisible) {
+              setState(() => _isNavBarVisible = false);
+            }
+          } else if (notification.direction == ScrollDirection.forward) {
+            // User is scrolling up, show the nav bar
+            if (!_isNavBarVisible) {
+              setState(() => _isNavBarVisible = true);
+            }
+          }
+          return true;
+        },
+        child: _screenForTab(_selectedTab),
+      ),
+      bottomNavigationBar: AnimatedSlide(
+        duration: const Duration(
+          milliseconds: 600,
+        ), // Adjust value to control speed of animation
+        curve: Curves.easeOutCubic,
+        // Slide down off-screen if false, stay in place if true
+        offset: _isNavBarVisible ? Offset.zero : const Offset(0, 2),
+        child: FloatingNavBar(
+          selectedTab: _selectedTab,
+          isMenuOpen: _isMenuOpen,
+          onTabSelected: (tab) => setState(() => _selectedTab = tab),
+          onAddPressed: _onAddPressed,
+        ),
       ),
     );
   }

@@ -122,6 +122,10 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
       ),
     );
 
+    // Format the number nicely using your existing currency_formatter.dart
+    final currency = _selectedAccount?.currency ?? 'PHP';
+    final formattedAmount = formatMoney(_amountValue, currency);
+
     // Invalidate every provider whose data this transaction affects.
     ref.invalidate(allTransactionsProvider);
     ref.invalidate(todayTransactionsProvider);
@@ -129,7 +133,39 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
     ref.invalidate(totalEquityByCurrencyProvider);
 
     if (!mounted) return;
+
+    // Trigger the floating pill just before we pop the screen!
+    _showSuccessToast(context, formattedAmount, _selectedCategory);
+
     Navigator.of(context).pop();
+  }
+
+  void _showSuccessToast(
+    BuildContext context,
+    String amountText,
+    String? category,
+  ) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+
+    // Build the message string here to keep the widget code clean
+    final message = category != null
+        ? '${_isExpense ? 'Expense' : 'Income'} saved\n$amountText in $category'
+        : '${_isExpense ? 'Expense' : 'Income'} saved\n$amountText';
+
+    entry = OverlayEntry(
+      builder: (context) => _AnimatedToast(
+        message: message,
+        onDismissed: () {
+          // This gets called AFTER the slide-up animation finishes
+          if (entry.mounted) {
+            entry.remove();
+          }
+        },
+      ),
+    );
+
+    overlay.insert(entry);
   }
 
   @override
@@ -505,6 +541,119 @@ class _KeypadButton extends StatelessWidget {
                       color: Color(0xFF222222),
                     ),
                   ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedToast extends StatefulWidget {
+  final String message;
+  final VoidCallback onDismissed;
+
+  const _AnimatedToast({required this.message, required this.onDismissed});
+
+  @override
+  State<_AnimatedToast> createState() => _AnimatedToastState();
+}
+
+// SingleTickerProviderStateMixin is required whenever you use an AnimationController
+// SingleTickerProviderStateMixin is required whenever you use an AnimationController
+class _AnimatedToastState extends State<_AnimatedToast>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _offsetAnimation;
+  late Animation<double> _opacityAnimation; // 1. Added an opacity animation
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _offsetAnimation =
+        Tween<Offset>(begin: const Offset(0.0, -1.5), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Curves.easeOutBack,
+            reverseCurve: Curves.easeIn,
+          ),
+        );
+
+    // 2. Set up the fade timing
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeIn, // Fades in smoothly when moving down
+        // The Interval(0.5, 1.0) means it will reach 0 opacity exactly halfway through the slide up!
+        reverseCurve: const Interval(0.5, 1.0),
+      ),
+    );
+
+    _playAnimation();
+  }
+
+  Future<void> _playAnimation() async {
+    await _controller.forward();
+    await Future.delayed(const Duration(seconds: 3));
+    if (mounted) {
+      await _controller.reverse();
+      widget.onDismissed();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 16,
+      left: 0,
+      right: 0,
+      child: Material(
+        color: Colors.transparent,
+        // 3. Wrap your SlideTransition in a FadeTransition
+        child: FadeTransition(
+          opacity: _opacityAnimation,
+          child: SlideTransition(
+            position: _offsetAnimation,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF222222),
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  widget.message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

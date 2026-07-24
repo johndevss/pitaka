@@ -6,6 +6,9 @@ import 'package:logger/logger.dart';
 import '../../providers/account_providers.dart';
 import '../../models/account.dart';
 import '../../utils/currency_formatter.dart';
+import '../../providers/transaction_providers.dart';
+import '../../models/transaction_model.dart';
+import '../../data/transaction_dao.dart';
 
 final logger = Logger(
   printer: PrettyPrinter(
@@ -81,16 +84,98 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       return;
     }
 
-    // TODO: Create a DAO method later to handle transferring money
-    // Usually, this is done by inserting an expense (-) into _fromAccount
-    // and an income (+) into _toAccount as a single database transaction.
-
-    logger.w(
-      'Transferring $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',
+    final currentBalance = await ref.read(
+      accountBalanceProvider(_fromAccount!.id!).future,
     );
 
-    if (!mounted) return;
-    Navigator.of(context).pop();
+    if (currentBalance < _amountValue) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Insufficient balance. Available: ${currencySymbol(_fromAccount!.currency)}${currentBalance.toStringAsFixed(2)}',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final dao = ref.read(transactionDaoProvider);
+    final now = DateTime.now();
+
+    final toDisplayName = (_toAccount!.name?.isNotEmpty == true)
+        ? _toAccount!.name!
+        : _toAccount!.provider;
+    final fromDisplayName = (_fromAccount!.name?.isNotEmpty == true)
+        ? _fromAccount!.name!
+        : _fromAccount!.provider;
+
+    final customNote = _noteController.text.trim();
+    final expenseNote = customNote.isEmpty
+        ? 'Transfer to $toDisplayName'
+        : customNote;
+    final incomeNote = customNote.isEmpty
+        ? 'Transfer from $fromDisplayName'
+        : customNote;
+
+    // Create the deduction for the sender
+    final expense = TransactionModel(
+      accountId: _fromAccount!.id!,
+      amount: -_amountValue, // Negative amount
+      category: 'Transfer Out',
+      note: expenseNote,
+      createdAt: now,
+    );
+
+    // Create the addition for the receiver
+    final income = TransactionModel(
+      accountId: _toAccount!.id!,
+      amount: _amountValue, // Positive amount
+      category: 'Transfer In',
+      note: incomeNote,
+      createdAt: now,
+    );
+
+    try {
+      // fetch the LIVE balance right before transferring
+      final currentBalance = await ref.read(
+        accountBalanceProvider(_fromAccount!.id!).future,
+      );
+
+      // Pass currentBalance into transferFunds
+      await dao.transferFunds(expense, income, currentBalance: currentBalance);
+
+      logger.i(
+        'Successfully transferred $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',
+      );
+
+      // Invalidate providers so the UI (Dashboard & Accounts) updates immediately
+      ref.invalidate(allTransactionsProvider);
+      ref.invalidate(todayTransactionsProvider);
+      ref.invalidate(accountBalanceProvider(_fromAccount!.id!));
+      ref.invalidate(accountBalanceProvider(_toAccount!.id!));
+      ref.invalidate(totalEquityByCurrencyProvider);
+      ref.invalidate(accountsProvider);
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } on InsufficientBalanceException catch (e) {
+      logger.w('Transfer blocked: insufficient balance');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Insufficient balance. Available: ${currencySymbol(_fromAccount!.currency)}${e.available.toStringAsFixed(2)}',
+          ),
+        ),
+      );
+    } catch (e, st) {
+      logger.e('Transfer failed', error: e, stackTrace: st);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Transfer failed: $e')));
+    }
   }
 
   @override
@@ -159,7 +244,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                     child: _buildAccountDropdown(
                       label: 'FROM',
                       value: _fromAccount,
-                      accountsAsync: accountsAsync,
+                      accountsAsync: accountsAsync.whenData(
+                        (accounts) => accounts
+                            .where((a) => a.id != _toAccount?.id)
+                            .toList(),
+                      ),
                       onChanged: (acc) => setState(() => _fromAccount = acc),
                     ),
                   ),
@@ -170,7 +259,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                     child: _buildAccountDropdown(
                       label: 'TO',
                       value: _toAccount,
-                      accountsAsync: accountsAsync,
+                      accountsAsync: accountsAsync.whenData(
+                        (accounts) => accounts
+                            .where((a) => a.id != _fromAccount?.id)
+                            .toList(),
+                      ),
                       onChanged: (acc) => setState(() => _toAccount = acc),
                     ),
                   ),
@@ -294,13 +387,39 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                 items: accounts.map((acc) {
                   return DropdownMenuItem(
                     value: acc,
-                    child: Text(
-                      acc.name?.isNotEmpty == true ? acc.name! : acc.provider,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: Image.asset(
+                            'assets/icons/institutions/${acc.iconKey}.png',
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.account_balance_wallet,
+                                size: 18,
+                                color: Colors.grey.shade400,
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            acc.name?.isNotEmpty == true
+                                ? acc.name!
+                                : acc.provider,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }).toList(),

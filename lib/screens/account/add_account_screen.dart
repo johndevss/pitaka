@@ -108,7 +108,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
     final newAccount = Account(
       name: _nameController.text.trim(),
       type: accountType,
-      provider: _selectedInstitution?.iconKey ?? 'custom',
+      provider: _selectedInstitution?.name ?? 'custom',
       balance: double.parse(_balanceController.text),
       iconKey: _selectedInstitution?.iconKey,
       currency: _selectedInstitution?.currency ?? 'PHP',

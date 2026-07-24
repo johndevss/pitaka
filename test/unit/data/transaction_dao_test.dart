@@ -102,6 +102,58 @@ void main() {
     expect(todays.first.amount, equals(-20.0));
   });
 
+  test(
+    'transferFunds throws InsufficientBalanceException when balance is too low',
+    () async {
+      final fromAccount = await seedAccount();
+      final toAccount = await seedAccount();
+
+      final expense = TransactionModel(
+        accountId: fromAccount,
+        amount: -1500.0,
+        category: 'Transfer',
+        createdAt: DateTime(2026, 1, 5),
+      );
+      final income = TransactionModel(
+        accountId: toAccount,
+        amount: 1500.0,
+        category: 'Transfer',
+        createdAt: DateTime(2026, 1, 5),
+      );
+
+      expect(
+        () => dao.transferFunds(expense, income, currentBalance: 1000.0),
+        throwsA(isA<InsufficientBalanceException>()),
+      );
+
+      final all = await dao.getAllTransactions();
+      expect(all, isEmpty);
+    },
+  );
+
+  test('transferFunds succeeds when balance is sufficient', () async {
+    final fromAccount = await seedAccount();
+    final toAccount = await seedAccount();
+
+    final expense = TransactionModel(
+      accountId: fromAccount,
+      amount: -500.0,
+      category: 'Transfer',
+      createdAt: DateTime(2026, 1, 5),
+    );
+    final income = TransactionModel(
+      accountId: toAccount,
+      amount: 500.0,
+      category: 'Transfer',
+      createdAt: DateTime(2026, 1, 5),
+    );
+
+    await dao.transferFunds(expense, income, currentBalance: 1000.0);
+
+    final all = await dao.getAllTransactions();
+    expect(all.length, equals(2));
+  });
+
   test('updateTransaction persists changes', () async {
     final accountId = await seedAccount();
     await dao.insertTransaction(
