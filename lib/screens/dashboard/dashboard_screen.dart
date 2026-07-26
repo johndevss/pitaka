@@ -21,7 +21,6 @@ class DashboardScreen extends ConsumerWidget {
     final transactionsAsync = ref.watch(allTransactionsProvider);
 
     // ref.listen fires as a side effect (not during build) whenever
-    // updateCheckProvider's value changes — perfect for popping a dialog.
     ref.listen<AsyncValue<Map<String, dynamic>?>>(updateCheckProvider, (
       previous,
       next,

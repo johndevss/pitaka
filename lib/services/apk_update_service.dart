@@ -12,26 +12,21 @@ class ApkUpdateService {
   );
 
   /// Downloads the APK from [downloadUrl], reporting progress via
-  /// [onProgress] (0.0 to 1.0), then opens the Android install prompt.
   Future<void> downloadAndInstall({
     required String downloadUrl,
     required void Function(double progress) onProgress,
   }) async {
     try {
-      // 1. Find a safe place to store the file temporarily.
+      // Find a safe place to store the file temporarily.
       final dir = await getTemporaryDirectory();
       final savePath = '${dir.path}/update.apk';
 
-      // 2. Download with progress, throttled so we don't spam onProgress
-      //    the way ota_update used to spam its native callbacks.
+      // Download with progress, throttled so we don't spam onProgress
       int lastReportedPercent = -1;
 
       await _dio.download(
         downloadUrl,
         savePath,
-        // persistentConnection: false works around a known Android/dio
-        // issue where large downloads get cut with "Connection closed
-        // while receiving data" partway through.
         options: Options(persistentConnection: false),
         onReceiveProgress: (received, total) {
           if (total <= 0) return; // total unknown, skip
@@ -45,7 +40,7 @@ class ApkUpdateService {
         },
       );
 
-      // 3. Ask Android to open/install the downloaded file.
+      // Ask Android to open/install the downloaded file.
       final result = await OpenFilex.open(savePath);
 
       if (result.type != ResultType.done) {

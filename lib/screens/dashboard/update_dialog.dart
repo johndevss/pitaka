@@ -30,15 +30,11 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
       await apkService.downloadAndInstall(
         downloadUrl: widget.updateInfo['download_url'] as String,
         onProgress: (progress) {
-          // setState during a download callback — safe here since
-          // this widget is what's driving the download.
           if (mounted) {
             setState(() => _progress = progress);
           }
         },
       );
-      // Once OpenFilex.open() succeeds, Android takes over with its
-      // own install screen, so we can close this dialog.
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {

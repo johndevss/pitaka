@@ -13,28 +13,27 @@ class GitHubUpdateService {
 
   Future<Map<String, dynamic>?> checkForUpdate() async {
     try {
-      // 1. Get the version of the app currently running on the phone
+      // 1Get the version of the app currently running on the phone
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
 
-      // 2. Ask GitHub for the latest release
+      // Ask GitHub for the latest release
       final response = await _dio.get(_repoUrl);
 
       if (response.statusCode == 200) {
-        // dio already decodes JSON for us, no json.decode needed
         final data = response.data;
 
         // Remove 'v' if your tags are named like "v1.0.1"
         final latestVersion = (data['tag_name'] as String).replaceAll('v', '');
 
-        // 3. Find the APK link in the release assets
+        // Find the APK link in the release assets
         final assets = data['assets'] as List;
         final apkAsset = assets.firstWhere(
           (asset) => (asset['name'] as String).endsWith('.apk'),
           orElse: () => null,
         );
 
-        // 4. Compare versions
+        // Compare versions
         if (apkAsset != null && _isNewer(currentVersion, latestVersion)) {
           return {
             'latest_version': latestVersion,
