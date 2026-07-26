@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../providers/account_providers.dart';
 import '../../providers/transaction_providers.dart';
+import '../../providers/update_provider.dart';
 import '../../models/transaction_model.dart';
 import '../../utils/currency_formatter.dart';
 import '../account/account_card.dart';
+import 'update_dialog.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -17,6 +19,22 @@ class DashboardScreen extends ConsumerWidget {
     final accountsAsync = ref.watch(accountsProvider);
     final equityAsync = ref.watch(totalEquityByCurrencyProvider);
     final transactionsAsync = ref.watch(allTransactionsProvider);
+
+    // ref.listen fires as a side effect (not during build) whenever
+    // updateCheckProvider's value changes — perfect for popping a dialog.
+    ref.listen<AsyncValue<Map<String, dynamic>?>>(updateCheckProvider, (
+      previous,
+      next,
+    ) {
+      final updateInfo = next.value;
+      if (updateInfo != null) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => UpdateDialog(updateInfo: updateInfo),
+        );
+      }
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F5), // Background token
