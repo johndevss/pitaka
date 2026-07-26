@@ -7,6 +7,7 @@ import '../dashboard/dashboard_screen.dart';
 import '../transaction/expense_screen.dart';
 import '../transaction/transfer_screen.dart';
 import 'package:flutter/rendering.dart';
+import '../manage/manage_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -27,7 +28,7 @@ class _HomeShellState extends State<HomeShell> {
       case NavTab.wallet:
         return const AccountsScreen();
       case NavTab.manage:
-        return const Scaffold(body: Center(child: Text('Manage (planned)')));
+        return const ManageScreen();
       case NavTab.history:
         return const Scaffold(body: Center(child: Text('History (planned)')));
     }
