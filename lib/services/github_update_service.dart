@@ -5,15 +5,15 @@ import 'package:dio/dio.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class GitHubUpdateService {
-  final Dio _dio = Dio();
+  final Dio _dio;
+  GitHubUpdateService({Dio? dio}) : _dio = dio ?? Dio();
 
-  // Replace with your actual GitHub username!
   static const String _repoUrl =
       'https://api.github.com/repos/johndevss/pitaka/releases/latest';
 
   Future<Map<String, dynamic>?> checkForUpdate() async {
     try {
-      // 1Get the version of the app currently running on the phone
+      // Get the version of the app currently running on the phone
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
 
@@ -23,18 +23,19 @@ class GitHubUpdateService {
       if (response.statusCode == 200) {
         final data = response.data;
 
-        // Remove 'v' if your tags are named like "v1.0.1"
         final latestVersion = (data['tag_name'] as String).replaceAll('v', '');
 
-        // Find the APK link in the release assets
-        final assets = data['assets'] as List;
-        final apkAsset = assets.firstWhere(
-          (asset) => (asset['name'] as String).endsWith('.apk'),
-          orElse: () => null,
-        );
+        final assets = (data['assets'] as List).cast<Map<String, dynamic>>();
 
-        // Compare versions
-        if (apkAsset != null && _isNewer(currentVersion, latestVersion)) {
+        Map<String, dynamic>? apkAsset;
+        for (final asset in assets) {
+          if ((asset['name'] as String).endsWith('.apk')) {
+            apkAsset = asset;
+            break;
+          }
+        }
+
+        if (apkAsset != null && isNewer(currentVersion, latestVersion)) {
           return {
             'latest_version': latestVersion,
             'download_url': apkAsset['browser_download_url'],
@@ -45,14 +46,12 @@ class GitHubUpdateService {
       }
     } catch (e) {
       // If there's no internet or GitHub is down, just fail silently.
-      // We don't want to crash the app just because it can't check for updates.
       log('Update check failed: $e');
     }
     return null;
   }
 
-  // Simple check to see if GitHub's version string is higher than our current one
-  bool _isNewer(String current, String latest) {
+  bool isNewer(String current, String latest) {
     return latest.compareTo(current) > 0;
   }
 }
