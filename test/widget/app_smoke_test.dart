@@ -17,7 +17,7 @@ void main() {
     // Verify navigation tabs render
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Wallet'), findsOneWidget);
-    expect(find.text('Plan'), findsOneWidget);
+    expect(find.text('Manage'), findsOneWidget);
     expect(find.text('History'), findsOneWidget);
 
     // Verify add button icon renders

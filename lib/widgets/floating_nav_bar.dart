@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 
-enum NavTab { home, wallet, plan, history }
+enum NavTab { home, wallet, manage, history }
 
 class FloatingNavBar extends StatelessWidget {
   final NavTab selectedTab;
@@ -58,9 +58,9 @@ class FloatingNavBar extends StatelessWidget {
                     ),
                     _NavItem(
                       icon: Icons.calendar_today_rounded,
-                      label: 'Plan',
-                      isSelected: selectedTab == NavTab.plan,
-                      onTap: () => onTabSelected(NavTab.plan),
+                      label: 'Manage',
+                      isSelected: selectedTab == NavTab.manage,
+                      onTap: () => onTabSelected(NavTab.manage),
                     ),
                     _NavItem(
                       icon: Icons.history_rounded,
