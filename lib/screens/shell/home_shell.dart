@@ -26,8 +26,8 @@ class _HomeShellState extends State<HomeShell> {
         return const DashboardScreen();
       case NavTab.wallet:
         return const AccountsScreen();
-      case NavTab.plan:
-        return const Scaffold(body: Center(child: Text('Plan (planned)')));
+      case NavTab.manage:
+        return const Scaffold(body: Center(child: Text('Manage (planned)')));
       case NavTab.history:
         return const Scaffold(body: Center(child: Text('History (planned)')));
     }
