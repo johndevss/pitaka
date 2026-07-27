@@ -35,6 +35,12 @@ const List<Institution> supportedInstitutions = [
     type: 'e-wallet',
   ),
   Institution(
+    name: 'GoTyme',
+    iconKey: 'gotyme',
+    currency: 'PHP',
+    type: 'e-wallet',
+  ),
+  Institution(
     name: 'GrabPay',
     iconKey: 'grabpay',
     currency: 'PHP',
