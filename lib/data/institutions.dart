@@ -16,6 +16,12 @@ class Institution {
 
 const List<Institution> supportedInstitutions = [
   Institution(
+    name: 'Cash on Hand',
+    iconKey: 'cash_on_hand',
+    currency: 'PHP',
+    type: 'e-wallet',
+  ),
+  Institution(
     name: 'GCash',
     iconKey: 'gcash',
     currency: 'PHP',
