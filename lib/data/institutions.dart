@@ -61,4 +61,16 @@ const List<Institution> supportedInstitutions = [
     type: 'bank',
   ),
   Institution(name: 'RCBC', iconKey: 'rcbc', currency: 'PHP', type: 'bank'),
+  Institution(
+    name: 'BPI BanKo',
+    iconKey: 'bpi-banko',
+    currency: 'PHP',
+    type: 'e-wallet',
+  ),
+  Institution(
+    name: 'DiskarTech',
+    iconKey: 'rcbc-diskartech',
+    currency: 'PHP',
+    type: 'e-wallet',
+  ),
 ];
