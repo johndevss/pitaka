@@ -195,24 +195,6 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          // Toggle expense/income
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              icon: Icon(
-                _isExpense
-                    ? Icons.arrow_downward_rounded
-                    : Icons.arrow_upward_rounded,
-                color: _isExpense
-                    ? const Color(0xFFD64545)
-                    : const Color(0xFF2E9F5D),
-              ),
-              onPressed: () => setState(() => _isExpense = !_isExpense),
-              tooltip: 'Switch to ${_isExpense ? 'income' : 'expense'}',
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: Column(
