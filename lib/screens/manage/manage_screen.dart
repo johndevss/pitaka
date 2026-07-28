@@ -40,7 +40,7 @@ class ManageScreen extends StatelessWidget {
             _ManageListItem(
               icon: Icons.flag_outlined,
               title: 'Personal Goals',
-              subtitle: '5 accounts tracked',
+              subtitle: 'Coming Soon!',
               onTap: () {
                 // TODO: Build personal goals screen
               },
@@ -49,7 +49,7 @@ class ManageScreen extends StatelessWidget {
             _ManageListItem(
               icon: Icons.subscriptions_outlined,
               title: 'Subscriptions',
-              subtitle: '5 accounts tracked',
+              subtitle: 'Coming Soon!',
               onTap: () {
                 // TODO: Build subscriptions screen
               },
@@ -58,7 +58,7 @@ class ManageScreen extends StatelessWidget {
             _ManageListItem(
               icon: Icons.speed,
               title: 'Daily Limit',
-              subtitle: 'Set a limit for daily spending',
+              subtitle: 'Coming Soon!',
               onTap: () {
                 // TODO: Build daily limit screen
               },
@@ -67,7 +67,7 @@ class ManageScreen extends StatelessWidget {
             _ManageListItem(
               icon: Icons.percent_outlined,
               title: 'Interest settings',
-              subtitle: '2 accounts earning interest',
+              subtitle: 'Coming Soon!',
               onTap: () {
                 // TODO: Build interest settings screen
               },
@@ -81,7 +81,15 @@ class ManageScreen extends StatelessWidget {
                   child: _ManageListItem(
                     icon: Icons.download_outlined,
                     title: 'Export',
-                    onTap: () {},
+                    onTap: () {
+                      //TODO: Build Export Screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Coming Soon!'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -90,7 +98,13 @@ class ManageScreen extends StatelessWidget {
                     icon: Icons.settings_outlined,
                     title: 'Settings',
                     onTap: () {
-                      // TODO: Build tags screen
+                      //TODO: Build settings screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Coming Soon!'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
                     },
                   ),
                 ),
