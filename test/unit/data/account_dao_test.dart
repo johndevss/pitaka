@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:path/path.dart' as p;
 import 'package:pitaka/data/account_dao.dart';
 import 'package:pitaka/data/database_helper.dart';
 import 'package:pitaka/data/transaction_dao.dart';
@@ -7,9 +8,11 @@ import 'package:pitaka/models/account.dart';
 import 'package:pitaka/models/transaction_model.dart';
 
 void main() {
-  setUpAll(() {
+  setUpAll(() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+    final path = p.join(await databaseFactory.getDatabasesPath(), 'pitaka.db');
+    await databaseFactory.deleteDatabase(path);
   });
 
   setUp(() async {
