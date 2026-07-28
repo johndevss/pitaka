@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   static const _dbName = 'pitaka.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
 
   // Add a static variable to hold the open database connection
   static Database? _database;
@@ -63,6 +63,32 @@ class DatabaseHelper {
         effective_date TEXT NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        icon_key TEXT NOT NULL,
+        color_hex TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    await _seedDefaultCategories(db);
+  }
+
+  static Future<void> _seedDefaultCategories(Database db) async {
+    final now = DateTime.now().toIso8601String();
+    final defaults = [
+      {'name': 'Food', 'icon_key': 'restaurant', 'color_hex': 'FFD9A441'},
+      {'name': 'Transport', 'icon_key': 'car', 'color_hex': 'FF1F8A5B'},
+      {'name': 'Bills', 'icon_key': 'receipt', 'color_hex': 'FFD64545'},
+      {'name': 'Shopping', 'icon_key': 'shopping_bag', 'color_hex': 'FF3AA76D'},
+    ];
+
+    for (final cat in defaults) {
+      await db.insert('categories', {...cat, 'created_at': now});
+    }
   }
 
   static Future<void> _onUpgrade(
@@ -70,6 +96,18 @@ class DatabaseHelper {
     int oldVersion,
     int newVersion,
   ) async {
-    // Example for later: if (oldVersion < 2) { await db.execute('ALTER TABLE ...'); }
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE categories (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          icon_key TEXT NOT NULL,
+          color_hex TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )
+      ''');
+
+      await _seedDefaultCategories(db);
+    }
   }
 }

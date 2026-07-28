@@ -1,12 +1,21 @@
 // lib/screens/manage/manage_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/category_providers.dart';
+import 'categories_screen.dart';
 
-class ManageScreen extends StatelessWidget {
+class ManageScreen extends ConsumerWidget {
   const ManageScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final categoryCount = categoriesAsync.maybeWhen(
+      data: (categories) => categories.length,
+      orElse: () => null,
+    );
+
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -31,9 +40,13 @@ class ManageScreen extends StatelessWidget {
             _ManageListItem(
               icon: Icons.category_outlined,
               title: 'Categories',
-              subtitle: '8 categories',
+              subtitle: categoryCount != null
+                  ? '$categoryCount ${categoryCount == 1 ? 'category' : 'categories'}'
+                  : 'Loading…',
               onTap: () {
-                // TODO: Build categories screen
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const CategoriesScreen()),
+                );
               },
             ),
             const SizedBox(height: 10),
