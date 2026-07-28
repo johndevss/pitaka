@@ -12,3 +12,9 @@ final categoriesProvider = FutureProvider<List<Category>>((ref) async {
   final dao = ref.watch(categoryDaoProvider);
   return dao.getAllCategories();
 });
+
+final categoriesByTypeProvider =
+    FutureProvider.family<List<Category>, CategoryType>((ref, type) async {
+      final dao = ref.watch(categoryDaoProvider);
+      return dao.getCategoriesByType(type);
+    });

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/account_providers.dart';
 import '../../providers/transaction_providers.dart';
 import '../../providers/category_providers.dart';
+import '../../models/category.dart' show CategoryType;
 import '../../models/account.dart';
 import '../../models/transaction_model.dart';
 import '../../utils/currency_formatter.dart';
@@ -144,7 +145,11 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     final accountsAsync = ref.watch(accountsProvider);
-    final categoriesAsync = ref.watch(categoriesProvider);
+    final categoriesAsync = ref.watch(
+      categoriesByTypeProvider(
+        _isExpense ? CategoryType.expense : CategoryType.income,
+      ),
+    );
     final currency = _selectedAccount?.currency ?? 'PHP';
 
     return Scaffold(
@@ -276,7 +281,7 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'No categories yet — add some in Manage > Categories',
+                          'No ${_isExpense ? 'expense' : 'income'} categories yet — add some in Manage > Categories',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade500,
@@ -582,7 +587,6 @@ class _AnimatedToastState extends State<_AnimatedToast>
           ),
         );
 
-    // 2. Set up the fade timing
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,

@@ -18,6 +18,17 @@ class CategoryDao {
     return rows.map((row) => Category.fromMap(row)).toList();
   }
 
+  Future<List<Category>> getCategoriesByType(CategoryType type) async {
+    final db = await _db;
+    final rows = await db.query(
+      'categories',
+      where: 'type = ?',
+      whereArgs: [type.value],
+      orderBy: 'created_at ASC',
+    );
+    return rows.map((row) => Category.fromMap(row)).toList();
+  }
+
   Future<int> updateCategory(Category category) async {
     final db = await _db;
     return db.update(

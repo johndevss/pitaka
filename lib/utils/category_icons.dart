@@ -14,6 +14,7 @@ const Map<String, IconData> categoryIconMap = {
   'phone': Icons.phone_iphone_rounded,
   'gift': Icons.card_giftcard_rounded,
   'salary': Icons.payments_rounded,
+  'wallet': Icons.account_balance_wallet_rounded,
   'other': Icons.category_rounded,
 };
 
@@ -21,7 +22,7 @@ IconData iconForKey(String key) {
   return categoryIconMap[key] ?? Icons.category_rounded;
 }
 
-/// Every option shown in the icon picker when adding/editing a category.
+// Every option shown in the icon picker when adding/editing a category.
 List<MapEntry<String, IconData>> get categoryIconOptions =>
     categoryIconMap.entries.toList();
 

@@ -70,6 +70,7 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         icon_key TEXT NOT NULL,
         color_hex TEXT NOT NULL,
+        type TEXT NOT NULL DEFAULT 'expense',
         created_at TEXT NOT NULL
       )
     ''');
@@ -80,10 +81,54 @@ class DatabaseHelper {
   static Future<void> _seedDefaultCategories(Database db) async {
     final now = DateTime.now().toIso8601String();
     final defaults = [
-      {'name': 'Food', 'icon_key': 'restaurant', 'color_hex': 'FFD9A441'},
-      {'name': 'Transport', 'icon_key': 'car', 'color_hex': 'FF1F8A5B'},
-      {'name': 'Bills', 'icon_key': 'receipt', 'color_hex': 'FFD64545'},
-      {'name': 'Shopping', 'icon_key': 'shopping_bag', 'color_hex': 'FF3AA76D'},
+      {
+        'name': 'Food',
+        'icon_key': 'restaurant',
+        'color_hex': 'FFD9A441',
+        'type': 'expense',
+      },
+      {
+        'name': 'Transport',
+        'icon_key': 'car',
+        'color_hex': 'FF1F8A5B',
+        'type': 'expense',
+      },
+      {
+        'name': 'Bills',
+        'icon_key': 'receipt',
+        'color_hex': 'FFD64545',
+        'type': 'expense',
+      },
+      {
+        'name': 'Shopping',
+        'icon_key': 'shopping_bag',
+        'color_hex': 'FF3AA76D',
+        'type': 'expense',
+      },
+      {
+        'name': 'Salary',
+        'icon_key': 'salary',
+        'color_hex': 'FF1F8A5B',
+        'type': 'income',
+      },
+      {
+        'name': 'Allowance',
+        'icon_key': 'wallet',
+        'color_hex': 'FF3A6FD6',
+        'type': 'income',
+      },
+      {
+        'name': 'Gift',
+        'icon_key': 'gift',
+        'color_hex': 'FFD65C9E',
+        'type': 'income',
+      },
+      {
+        'name': 'Other Income',
+        'icon_key': 'other',
+        'color_hex': 'FF6B7280',
+        'type': 'income',
+      },
     ];
 
     for (final cat in defaults) {
@@ -103,10 +148,10 @@ class DatabaseHelper {
           name TEXT NOT NULL,
           icon_key TEXT NOT NULL,
           color_hex TEXT NOT NULL,
+          type TEXT NOT NULL DEFAULT 'expense',
           created_at TEXT NOT NULL
         )
       ''');
-
       await _seedDefaultCategories(db);
     }
   }

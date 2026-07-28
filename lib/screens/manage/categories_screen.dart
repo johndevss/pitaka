@@ -6,93 +6,162 @@ import '../../models/category.dart';
 import '../../providers/category_providers.dart';
 import '../../utils/category_icons.dart';
 
-class CategoriesScreen extends ConsumerWidget {
+class CategoriesScreen extends ConsumerStatefulWidget {
   const CategoriesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final categoriesAsync = ref.watch(categoriesProvider);
+  ConsumerState<CategoriesScreen> createState() => _CategoriesScreenState();
+}
 
+class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  CategoryType get _currentType =>
+      _tabController.index == 0 ? CategoryType.expense : CategoryType.income;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Categories')),
+      appBar: AppBar(
+        title: const Text('Categories'),
+        bottom: TabBar(
+          controller: _tabController,
+          onTap: (_) => setState(() {}),
+          tabs: const [
+            Tab(text: 'Expense'),
+            Tab(text: 'Income'),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openEditor(context, ref, existing: null),
+        onPressed: () =>
+            _openEditor(context, ref: ref, existing: null, type: _currentType),
         child: const Icon(Icons.add),
       ),
-      body: categoriesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) =>
-            Center(child: Text('Couldn\'t load categories: $err')),
-        data: (categories) {
-          if (categories.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'No categories yet.\nTap + to add your first one (e.g. Food, Transport).',
-                  textAlign: TextAlign.center,
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _CategoryList(type: CategoryType.expense),
+          _CategoryList(type: CategoryType.income),
+        ],
+      ),
+    );
+  }
+}
+
+void _openEditor(
+  BuildContext context, {
+  required WidgetRef ref,
+  required Category? existing,
+  required CategoryType type,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => _CategoryEditorSheet(existing: existing, type: type),
+  );
+}
+
+class _CategoryList extends ConsumerWidget {
+  final CategoryType type;
+
+  const _CategoryList({required this.type});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categoriesAsync = ref.watch(categoriesByTypeProvider(type));
+
+    return categoriesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) =>
+          Center(child: Text('Couldn\'t load categories: $err')),
+      data: (categories) {
+        if (categories.isEmpty) {
+          final label = type == CategoryType.expense ? 'expense' : 'income';
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'No $label categories yet.\nTap + to add your first one.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          itemCount: categories.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            final color = colorFromHex(category.colorHex);
+
+            return Material(
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => _openEditor(
+                  context,
+                  ref: ref,
+                  existing: category,
+                  type: type,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          iconForKey(category.iconKey),
+                          size: 20,
+                          color: color,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          category.name,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, size: 20),
+                        onPressed: () => _confirmDelete(context, ref, category),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            itemCount: categories.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              final color = colorFromHex(category.colorHex);
-
-              return Material(
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => _openEditor(context, ref, existing: category),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            iconForKey(category.iconKey),
-                            size: 20,
-                            color: color,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            category.name,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, size: 20),
-                          onPressed: () =>
-                              _confirmDelete(context, ref, category),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
+          },
+        );
+      },
     );
   }
 
@@ -116,6 +185,7 @@ class CategoriesScreen extends ConsumerWidget {
               final dao = ref.read(categoryDaoProvider);
               await dao.deleteCategory(category.id!);
               ref.invalidate(categoriesProvider);
+              ref.invalidate(categoriesByTypeProvider(category.type));
               if (dialogContext.mounted) Navigator.of(dialogContext).pop();
             },
             child: const Text('Delete'),
@@ -124,24 +194,13 @@ class CategoriesScreen extends ConsumerWidget {
       ),
     );
   }
-
-  void _openEditor(
-    BuildContext context,
-    WidgetRef ref, {
-    required Category? existing,
-  }) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => _CategoryEditorSheet(existing: existing),
-    );
-  }
 }
 
 class _CategoryEditorSheet extends ConsumerStatefulWidget {
   final Category? existing;
+  final CategoryType type;
 
-  const _CategoryEditorSheet({required this.existing});
+  const _CategoryEditorSheet({required this.existing, required this.type});
 
   @override
   ConsumerState<_CategoryEditorSheet> createState() =>
@@ -154,6 +213,7 @@ class _CategoryEditorSheetState extends ConsumerState<_CategoryEditorSheet> {
   late Color _selectedColor;
 
   bool get _isEditing => widget.existing != null;
+  CategoryType get _type => widget.existing?.type ?? widget.type;
 
   @override
   void initState() {
@@ -196,12 +256,13 @@ class _CategoryEditorSheetState extends ConsumerState<_CategoryEditorSheet> {
           name: name,
           iconKey: _selectedIconKey,
           colorHex: colorToHex(_selectedColor),
+          type: _type,
           createdAt: DateTime.now(),
         ),
       );
     }
-
     ref.invalidate(categoriesProvider);
+    ref.invalidate(categoriesByTypeProvider(_type));
 
     if (mounted) Navigator.of(context).pop();
   }
@@ -220,7 +281,11 @@ class _CategoryEditorSheetState extends ConsumerState<_CategoryEditorSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _isEditing ? 'Edit Category' : 'New Category',
+            _isEditing
+                ? 'Edit Category'
+                : _type == CategoryType.expense
+                ? 'New Expense Category'
+                : 'New Income Category',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
