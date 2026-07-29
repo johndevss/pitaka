@@ -1,13 +1,14 @@
 // lib/screens/home_shell.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '../../widgets/floating_nav_bar.dart';
 import '../account/accounts_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../transaction/expense_screen.dart';
 import '../transaction/transfer_screen.dart';
-import 'package:flutter/rendering.dart';
 import '../manage/manage_screen.dart';
+import '../transaction/history_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -30,7 +31,7 @@ class _HomeShellState extends State<HomeShell> {
       case NavTab.manage:
         return const ManageScreen();
       case NavTab.history:
-        return const Scaffold(body: Center(child: Text('History (planned)')));
+        return const HistoryScreen();
     }
   }
 
