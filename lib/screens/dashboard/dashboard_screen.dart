@@ -47,15 +47,50 @@ class DashboardScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Good day',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Good day',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        // The new manual update button
+                        IconButton(
+                          icon: const Icon(Icons.system_update, size: 20),
+                          color: Colors.grey.shade600,
+                          onPressed: () async {
+                            final updateService = ref.read(
+                              updateServiceProvider,
+                            );
+
+                            final updateInfo = await updateService
+                                .checkForUpdate();
+
+                            if (!context.mounted) return;
+
+                            if (updateInfo != null) {
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (_) =>
+                                    UpdateDialog(updateInfo: updateInfo),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Your app is up to date!'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
                     const Text(
                       'Your Wallet',
                       style: TextStyle(
