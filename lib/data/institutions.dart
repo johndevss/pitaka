@@ -16,6 +16,12 @@ class Institution {
 
 const List<Institution> supportedInstitutions = [
   Institution(
+    name: 'Cash',
+    iconKey: 'cash_on_hand',
+    currency: 'PHP',
+    type: 'e-wallet',
+  ),
+  Institution(
     name: 'GCash',
     iconKey: 'gcash',
     currency: 'PHP',
@@ -25,6 +31,12 @@ const List<Institution> supportedInstitutions = [
   Institution(
     name: 'Maribank',
     iconKey: 'maribank',
+    currency: 'PHP',
+    type: 'e-wallet',
+  ),
+  Institution(
+    name: 'GoTyme',
+    iconKey: 'gotyme',
     currency: 'PHP',
     type: 'e-wallet',
   ),
@@ -61,4 +73,16 @@ const List<Institution> supportedInstitutions = [
     type: 'bank',
   ),
   Institution(name: 'RCBC', iconKey: 'rcbc', currency: 'PHP', type: 'bank'),
+  Institution(
+    name: 'BPI BanKo',
+    iconKey: 'bpi-banko',
+    currency: 'PHP',
+    type: 'e-wallet',
+  ),
+  Institution(
+    name: 'DiskarTech',
+    iconKey: 'rcbc-diskartech',
+    currency: 'PHP',
+    type: 'e-wallet',
+  ),
 ];

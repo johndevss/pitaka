@@ -104,17 +104,21 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                     );
                   }
+                  // Sorts accounts with balance from highest to lowest
+                  final sortedAccounts = [...accounts]
+                    ..sort((a, b) => b.balance.compareTo(a.balance));
+
                   return SizedBox(
                     height: 190,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: accounts.length,
+                      itemCount: sortedAccounts.length,
                       separatorBuilder: (_, _) => const SizedBox(width: 12),
                       itemBuilder: (context, index) {
                         return SizedBox(
                           width: 160,
-                          child: AccountCard(account: accounts[index]),
+                          child: AccountCard(account: sortedAccounts[index]),
                         );
                       },
                     ),
