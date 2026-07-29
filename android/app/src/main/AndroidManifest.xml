@@ -2,7 +2,7 @@
     <application
         android:label="pitaka"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         
         <!-- FORCE THE APP TO USE THE STABLE SKIA RENDERER -->
         <meta-data 

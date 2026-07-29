@@ -4,34 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/account_providers.dart';
 import '../../providers/transaction_providers.dart';
+import '../../providers/category_providers.dart';
+import '../../models/category.dart' show CategoryType;
 import '../../models/account.dart';
 import '../../models/transaction_model.dart';
 import '../../utils/currency_formatter.dart';
-
-// Quick category shortcuts — expand this list as needed.
-// icon + label only; category string saved is the label.
-const List<_CategoryOption> _quickCategories = [
-  _CategoryOption(
-    label: 'Food',
-    icon: Icons.restaurant_rounded,
-    color: Color(0xFFD9A441),
-  ),
-  _CategoryOption(
-    label: 'Transport',
-    icon: Icons.directions_car_rounded,
-    color: Color(0xFF1F8A5B),
-  ),
-  _CategoryOption(
-    label: 'Bills',
-    icon: Icons.receipt_long_rounded,
-    color: Color(0xFFD64545),
-  ),
-  _CategoryOption(
-    label: 'Shopping',
-    icon: Icons.shopping_bag_rounded,
-    color: Color(0xFF3AA76D),
-  ),
-];
+import '../../utils/category_icons.dart';
 
 class ExpenseScreen extends ConsumerStatefulWidget {
   final bool initialIsExpense;
@@ -107,9 +85,6 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
     final dao = ref.read(transactionDaoProvider);
     final signedAmount = _isExpense ? -_amountValue : _amountValue;
 
-    // NOTE: assumes TransactionModel's constructor mirrors Account's pattern
-    // (id nullable, createdAt required). Adjust field names here if
-    // transaction_model.dart differs from this assumption.
     await dao.insertTransaction(
       TransactionModel(
         accountId: _selectedAccount!.id!,
@@ -122,7 +97,6 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
       ),
     );
 
-    // Format the number nicely using your existing currency_formatter.dart
     final currency = _selectedAccount?.currency ?? 'PHP';
     final formattedAmount = formatMoney(_amountValue, currency);
 
@@ -171,6 +145,11 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     final accountsAsync = ref.watch(accountsProvider);
+    final categoriesAsync = ref.watch(
+      categoriesByTypeProvider(
+        _isExpense ? CategoryType.expense : CategoryType.income,
+      ),
+    );
     final currency = _selectedAccount?.currency ?? 'PHP';
 
     return Scaffold(
@@ -195,24 +174,6 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          // Toggle expense/income
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              icon: Icon(
-                _isExpense
-                    ? Icons.arrow_downward_rounded
-                    : Icons.arrow_upward_rounded,
-                color: _isExpense
-                    ? const Color(0xFFD64545)
-                    : const Color(0xFF2E9F5D),
-              ),
-              onPressed: () => setState(() => _isExpense = !_isExpense),
-              tooltip: 'Switch to ${_isExpense ? 'income' : 'expense'}',
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: Column(
@@ -312,51 +273,83 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
             const SizedBox(height: 8),
             SizedBox(
               height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _quickCategories.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final cat = _quickCategories[index];
-                  final isSelected = _selectedCategory == cat.label;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedCategory = isSelected ? null : cat.label;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? cat.color.withValues(alpha: 0.15)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isSelected ? cat.color : Colors.grey.shade200,
+              child: categoriesAsync.when(
+                data: (categories) {
+                  if (categories.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'No ${_isExpense ? 'expense' : 'income'} categories yet — add some in Manage > Categories',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                          ),
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(cat.icon, size: 16, color: cat.color),
-                          const SizedBox(width: 6),
-                          Text(
-                            cat.label,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.w500,
-                              color: const Color(0xFF222222),
+                    );
+                  }
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: categories.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final cat = categories[index];
+                      final color = colorFromHex(cat.colorHex);
+                      final isSelected = _selectedCategory == cat.name;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = isSelected ? null : cat.name;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? color.withValues(alpha: 0.15)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSelected ? color : Colors.grey.shade200,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                iconForKey(cat.iconKey),
+                                size: 16,
+                                color: color,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                cat.name,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  color: const Color(0xFF222222),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
+                loading: () => const Center(
+                  child: SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                error: (err, stack) => const SizedBox.shrink(),
               ),
             ),
 
@@ -398,15 +391,40 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                               items: accounts.map((acc) {
                                 return DropdownMenuItem(
                                   value: acc,
-                                  child: Text(
-                                    acc.name?.isNotEmpty == true
-                                        ? acc.name!
-                                        : acc.provider,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Image.asset(
+                                          'assets/icons/institutions/${acc.iconKey}.png',
+                                          width: 24,
+                                          height: 24,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Icon(
+                                                  Icons.account_balance_wallet,
+                                                  size: 18,
+                                                  color: Colors.grey.shade400,
+                                                );
+                                              },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          acc.name?.isNotEmpty == true
+                                              ? acc.name!
+                                              : acc.provider,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 );
                               }).toList(),
@@ -454,18 +472,6 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
       ),
     );
   }
-}
-
-class _CategoryOption {
-  final String label;
-  final IconData icon;
-  final Color color;
-
-  const _CategoryOption({
-    required this.label,
-    required this.icon,
-    required this.color,
-  });
 }
 
 class _NumericKeypad extends StatelessWidget {
@@ -558,13 +564,11 @@ class _AnimatedToast extends StatefulWidget {
   State<_AnimatedToast> createState() => _AnimatedToastState();
 }
 
-// SingleTickerProviderStateMixin is required whenever you use an AnimationController
-// SingleTickerProviderStateMixin is required whenever you use an AnimationController
 class _AnimatedToastState extends State<_AnimatedToast>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _offsetAnimation;
-  late Animation<double> _opacityAnimation; // 1. Added an opacity animation
+  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
@@ -583,12 +587,10 @@ class _AnimatedToastState extends State<_AnimatedToast>
           ),
         );
 
-    // 2. Set up the fade timing
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Curves.easeIn, // Fades in smoothly when moving down
-        // The Interval(0.5, 1.0) means it will reach 0 opacity exactly halfway through the slide up!
+        curve: Curves.easeIn,
         reverseCurve: const Interval(0.5, 1.0),
       ),
     );
@@ -619,7 +621,6 @@ class _AnimatedToastState extends State<_AnimatedToast>
       right: 0,
       child: Material(
         color: Colors.transparent,
-        // 3. Wrap your SlideTransition in a FadeTransition
         child: FadeTransition(
           opacity: _opacityAnimation,
           child: SlideTransition(

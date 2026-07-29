@@ -1,13 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:path/path.dart' as p;
 import 'package:pitaka/data/daily_limit_dao.dart';
 import 'package:pitaka/data/database_helper.dart';
 import 'package:pitaka/models/daily_limit.dart';
 
 void main() {
-  setUpAll(() {
+  setUpAll(() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+    final path = p.join(await databaseFactory.getDatabasesPath(), 'pitaka.db');
+    await databaseFactory.deleteDatabase(path);
   });
 
   setUp(() async {

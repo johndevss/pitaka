@@ -162,6 +162,12 @@ class AccountCard extends ConsumerWidget {
         return const Color(0xFFEE4D2D); // Shopee Orange
       case 'maribank':
         return const Color(0xFFF58220); // Maribank Orange
+      case 'gotyme':
+        return const Color(0xFF00D2FF); // GoTyme Electric Cyan/Blue
+      case 'bpi-banko':
+        return const Color(0xFF951415); // BanKo Crimson Red
+      case 'rcbc-diskartech':
+        return const Color(0xFF00A8B5); // DiskarTech Vibrant Teal
 
       // Banks
       case 'bpi':
@@ -176,6 +182,9 @@ class AccountCard extends ConsumerWidget {
         return const Color(0xFF006A4E); // Landbank Forest Green
       case 'rcbc':
         return const Color(0xFF003DA5); // RCBC Corporate Blue
+
+      case 'cash':
+        return const Color(0xFF2E7D32); // Cash/Money Green
 
       default:
         return _colorForType(account.type); // Safe fallback if no match found
