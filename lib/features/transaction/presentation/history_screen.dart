@@ -79,12 +79,12 @@ class HistoryScreen extends ConsumerWidget {
     List<TransactionModel> transactions,
   ) {
     final sorted = [...transactions]
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      ..sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
 
     final Map<String, List<TransactionModel>> groupedMap = {};
 
     for (final t in sorted) {
-      final key = DateFormat('yyyy-MM-dd').format(t.createdAt);
+      final key = DateFormat('yyyy-MM-dd').format(t.transactionDate);
       groupedMap.putIfAbsent(key, () => []).add(t);
     }
 

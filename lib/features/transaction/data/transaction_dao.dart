@@ -65,7 +65,7 @@ class TransactionDao {
         COALESCE(c.name, t.category) AS category
       FROM transactions t
       LEFT JOIN categories c ON t.category_id = c.id
-      ORDER BY t.created_at DESC
+      ORDER BY t.transaction_date DESC, t.id DESC
     ''');
     return result.map((map) => TransactionModel.fromMap(map)).toList();
   }
@@ -81,7 +81,7 @@ class TransactionDao {
       FROM transactions t
       LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.account_id = ?
-      ORDER BY t.created_at DESC
+      ORDER BY t.transaction_date DESC, t.id DESC
     ''',
       [accountId],
     );
@@ -122,8 +122,8 @@ class TransactionDao {
         COALESCE(c.name, t.category) AS category
       FROM transactions t
       LEFT JOIN categories c ON t.category_id = c.id
-      WHERE t.created_at BETWEEN ? AND ?
-      ORDER BY t.created_at DESC
+      WHERE t.transaction_date BETWEEN ? AND ?
+      ORDER BY t.transaction_date DESC, t.id DESC
     ''',
       [startOfDay, endOfDay],
     );

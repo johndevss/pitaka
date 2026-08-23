@@ -117,10 +117,10 @@ class _TransactionTileState extends State<TransactionTile> {
                         widget.showDate
                             ? DateFormat(
                                 'MMM d, y · h:mm a',
-                              ).format(widget.transaction.createdAt)
+                              ).format(widget.transaction.transactionDate)
                             : DateFormat(
                                 'h:mm a',
-                              ).format(widget.transaction.createdAt),
+                              ).format(widget.transaction.transactionDate),
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.grey.shade500,

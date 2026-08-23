@@ -275,11 +275,11 @@ class DashboardScreen extends ConsumerWidget {
     List<TransactionModel> transactions,
   ) {
     final sorted = [...transactions]
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      ..sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
     final Map<String, List<TransactionModel>> grouped = {};
 
     for (final t in sorted) {
-      final label = _dateLabel(t.createdAt);
+      final label = _dateLabel(t.transactionDate);
       grouped.putIfAbsent(label, () => []).add(t);
     }
     return grouped;
