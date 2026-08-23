@@ -55,15 +55,41 @@ class AccountDao {
   ]) async {
     final db = executor ?? await DatabaseHelper.initDb();
 
-    final account = await getAccountById(accountId, db);
-    if (account == null) return 0.0;
-
     final result = await db.rawQuery(
-      'SELECT SUM(amount) as total FROM transactions WHERE account_id = ?',
+      '''
+      SELECT (a.balance + COALESCE(SUM(t.amount), 0)) as current_balance
+      FROM accounts a
+      LEFT JOIN transactions t ON a.id = t.account_id
+      WHERE a.id = ?
+      GROUP BY a.id
+      ''',
       [accountId],
     );
 
-    final transactionSum = (result.first['total'] as double?) ?? 0.0;
-    return account.balance + transactionSum;
+    if (result.isEmpty) return 0.0;
+    return (result.first['current_balance'] as num?)?.toDouble() ?? 0.0;
+  }
+
+  // Aggregated total equity grouped by currency in a single high-performance SQL query
+  Future<Map<String, double>> getTotalEquityByCurrency() async {
+    final db = await DatabaseHelper.initDb();
+    final result = await db.rawQuery('''
+      SELECT a.currency, SUM(a.balance + COALESCE(t.total_tx, 0)) as total
+      FROM accounts a
+      LEFT JOIN (
+        SELECT account_id, SUM(amount) as total_tx
+        FROM transactions
+        GROUP BY account_id
+      ) t ON a.id = t.account_id
+      GROUP BY a.currency
+    ''');
+
+    final Map<String, double> totals = {};
+    for (final row in result) {
+      final currency = row['currency'] as String;
+      final total = (row['total'] as num?)?.toDouble() ?? 0.0;
+      totals[currency] = total;
+    }
+    return totals;
   }
 }

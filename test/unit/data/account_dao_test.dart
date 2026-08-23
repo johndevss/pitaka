@@ -124,4 +124,32 @@ void main() {
       expect(balance, equals(0.0));
     });
   });
+
+  group('getTotalEquityByCurrency', () {
+    test(
+      'groups total balances by currency accurately in single query',
+      () async {
+        final id1 = await dao.insertAccount(
+          buildAccount(balance: 1000.0).copyWith(currency: 'PHP'),
+        );
+        await dao.insertAccount(
+          buildAccount(balance: 50.0).copyWith(currency: 'USD'),
+        );
+
+        await txDao.insertTransaction(
+          TransactionModel(
+            accountId: id1,
+            amount: 500.0,
+            category: 'Income',
+            createdAt: DateTime(2026, 1, 2),
+          ),
+        );
+
+        final totals = await dao.getTotalEquityByCurrency();
+
+        expect(totals['PHP'], equals(1500.0));
+        expect(totals['USD'], equals(50.0));
+      },
+    );
+  });
 }

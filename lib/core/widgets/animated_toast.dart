@@ -1,8 +1,14 @@
-// lib/core/widgets/animated_toast.dart
-
+import 'dart:async';
 import 'package:flutter/material.dart';
 
+OverlayEntry? _activeToastEntry;
+
 void showSuccessToast(BuildContext context, String message) {
+  if (_activeToastEntry != null && _activeToastEntry!.mounted) {
+    _activeToastEntry!.remove();
+  }
+  _activeToastEntry = null;
+
   final overlay =
       Overlay.maybeOf(context, rootOverlay: true) ?? Overlay.of(context);
   late OverlayEntry entry;
@@ -14,10 +20,14 @@ void showSuccessToast(BuildContext context, String message) {
         if (entry.mounted) {
           entry.remove();
         }
+        if (_activeToastEntry == entry) {
+          _activeToastEntry = null;
+        }
       },
     ),
   );
 
+  _activeToastEntry = entry;
   overlay.insert(entry);
 }
 
@@ -41,6 +51,7 @@ class _AnimatedToastState extends State<AnimatedToast>
   late Animation<Offset> _offsetAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
+  Timer? _dismissTimer;
 
   @override
   void initState() {
@@ -80,15 +91,17 @@ class _AnimatedToastState extends State<AnimatedToast>
 
   Future<void> _playAnimation() async {
     await _controller.forward();
-    await Future.delayed(const Duration(seconds: 3));
-    if (mounted) {
-      await _controller.reverse();
-      widget.onDismissed();
-    }
+    _dismissTimer = Timer(const Duration(seconds: 3), () async {
+      if (mounted) {
+        await _controller.reverse();
+        widget.onDismissed();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _dismissTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }

@@ -25,12 +25,14 @@ class _SharedAxisTabSwitcherState extends State<SharedAxisTabSwitcher>
   late AnimationController _controller;
   late int _previousIndex;
   late int _currentIndex;
+  late final Set<int> _visitedIndices;
 
   @override
   void initState() {
     super.initState();
     _previousIndex = widget.selectedIndex;
     _currentIndex = widget.selectedIndex;
+    _visitedIndices = {widget.selectedIndex};
     _controller = AnimationController(vsync: this, duration: widget.duration)
       ..value = 1.0; // Initially fully arrived
   }
@@ -41,6 +43,7 @@ class _SharedAxisTabSwitcherState extends State<SharedAxisTabSwitcher>
     if (oldWidget.selectedIndex != widget.selectedIndex) {
       _previousIndex = oldWidget.selectedIndex;
       _currentIndex = widget.selectedIndex;
+      _visitedIndices.add(widget.selectedIndex);
       _controller.forward(from: 0.0);
     }
   }
@@ -70,6 +73,7 @@ class _SharedAxisTabSwitcherState extends State<SharedAxisTabSwitcher>
 
             // Hide offstage non-active screens
             final bool isOffstage = !isCurrent && !isPrevious;
+            final bool isVisited = _visitedIndices.contains(index);
 
             double opacity = 1.0;
             double dx = 0.0;
@@ -92,7 +96,9 @@ class _SharedAxisTabSwitcherState extends State<SharedAxisTabSwitcher>
                   opacity: opacity.clamp(0.0, 1.0),
                   child: Transform.translate(
                     offset: Offset(dx, 0),
-                    child: widget.children[index],
+                    child: isVisited
+                        ? widget.children[index]
+                        : const SizedBox.shrink(),
                   ),
                 ),
               ),

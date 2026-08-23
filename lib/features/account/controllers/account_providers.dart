@@ -16,7 +16,7 @@ class AccountsController extends AsyncNotifier<List<Account>> {
   }
 
   Future<void> addAccount(Account account) async {
-    state = const AsyncValue.loading();
+    state = AsyncLoading<List<Account>>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final dao = ref.read(accountDaoProvider);
       await dao.insertAccount(account);
@@ -26,7 +26,7 @@ class AccountsController extends AsyncNotifier<List<Account>> {
   }
 
   Future<void> updateAccount(Account account) async {
-    state = const AsyncValue.loading();
+    state = AsyncLoading<List<Account>>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final dao = ref.read(accountDaoProvider);
       await dao.updateAccount(account);
@@ -39,7 +39,7 @@ class AccountsController extends AsyncNotifier<List<Account>> {
   }
 
   Future<void> deleteAccount(int accountId) async {
-    state = const AsyncValue.loading();
+    state = AsyncLoading<List<Account>>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final dao = ref.read(accountDaoProvider);
       await dao.deleteAccount(accountId);
@@ -71,12 +71,5 @@ final totalEquityByCurrencyProvider = FutureProvider<Map<String, double>>((
   ref,
 ) async {
   final dao = ref.watch(accountDaoProvider);
-  final accounts = await dao.getAllAccounts();
-
-  final Map<String, double> totals = {};
-  for (final account in accounts) {
-    final balance = await dao.getCurrentBalance(account.id!);
-    totals[account.currency] = (totals[account.currency] ?? 0) + balance;
-  }
-  return totals;
+  return dao.getTotalEquityByCurrency();
 });

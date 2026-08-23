@@ -17,7 +17,7 @@ class TransactionsController extends AsyncNotifier<List<TransactionModel>> {
   }
 
   Future<void> addTransaction(TransactionModel transaction) async {
-    state = const AsyncValue.loading();
+    state = AsyncLoading<List<TransactionModel>>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final dao = ref.read(transactionDaoProvider);
       await dao.insertTransaction(transaction);
@@ -30,7 +30,7 @@ class TransactionsController extends AsyncNotifier<List<TransactionModel>> {
     required TransactionModel expense,
     required TransactionModel income,
   }) async {
-    state = const AsyncValue.loading();
+    state = AsyncLoading<List<TransactionModel>>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final dao = ref.read(transactionDaoProvider);
       await dao.transferFunds(expense, income);
@@ -42,7 +42,7 @@ class TransactionsController extends AsyncNotifier<List<TransactionModel>> {
   }
 
   Future<void> updateTransaction(TransactionModel transaction) async {
-    state = const AsyncValue.loading();
+    state = AsyncLoading<List<TransactionModel>>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final dao = ref.read(transactionDaoProvider);
       await dao.updateTransaction(transaction);
@@ -52,7 +52,7 @@ class TransactionsController extends AsyncNotifier<List<TransactionModel>> {
   }
 
   Future<void> deleteTransaction(int transactionId, {int? accountId}) async {
-    state = const AsyncValue.loading();
+    state = AsyncLoading<List<TransactionModel>>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final dao = ref.read(transactionDaoProvider);
       await dao.deleteTransaction(transactionId);

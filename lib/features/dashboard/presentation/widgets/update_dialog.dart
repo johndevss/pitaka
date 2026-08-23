@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/core/providers/update_provider.dart';
@@ -17,8 +18,16 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
   bool _isDownloading = false;
   double _progress = 0.0;
   String? _error;
+  CancelToken? _cancelToken;
+
+  @override
+  void dispose() {
+    _cancelToken?.cancel('Dialog closed');
+    super.dispose();
+  }
 
   Future<void> _startUpdate() async {
+    _cancelToken = CancelToken();
     setState(() {
       _isDownloading = true;
       _error = null;
@@ -29,6 +38,7 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
     try {
       await apkService.downloadAndInstall(
         downloadUrl: widget.updateInfo['download_url'] as String,
+        cancelToken: _cancelToken,
         onProgress: (progress) {
           if (mounted) {
             setState(() => _progress = progress);
@@ -37,7 +47,7 @@ class _UpdateDialogState extends ConsumerState<UpdateDialog> {
       );
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) {
+      if (mounted && !(_cancelToken?.isCancelled ?? false)) {
         setState(() {
           _isDownloading = false;
           _error = 'Download failed. Check your connection and try again.';

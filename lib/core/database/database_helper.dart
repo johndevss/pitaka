@@ -24,6 +24,10 @@ class DatabaseHelper {
     _database = await openDatabase(
       path,
       version: _dbVersion,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+        await db.rawQuery('PRAGMA journal_mode = WAL');
+      },
       onCreate: onCreate,
       onUpgrade: onUpgrade,
     );

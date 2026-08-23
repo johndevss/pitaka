@@ -27,7 +27,7 @@ class DashboardScreen extends ConsumerWidget {
       next,
     ) {
       final updateInfo = next.value;
-      if (previous?.value == null && updateInfo != null) {
+      if (previous?.value == null && updateInfo != null && context.mounted) {
         showDialog(
           context: context,
           barrierDismissible: false,
