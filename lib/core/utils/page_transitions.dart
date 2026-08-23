@@ -71,9 +71,9 @@ class SmoothExpandRoute<T> extends PageRouteBuilder<T> {
     this.alignment = const Alignment(0.7, 0.8),
   }) : super(
          pageBuilder: (context, animation, secondaryAnimation) => page,
-         transitionDuration: const Duration(milliseconds: 280),
-         reverseTransitionDuration: const Duration(milliseconds: 220),
-         opaque: false,
+         transitionDuration: const Duration(milliseconds: 250),
+         reverseTransitionDuration: const Duration(milliseconds: 200),
+         opaque: true,
          barrierDismissible: true,
          barrierColor: Colors.black26,
          transitionsBuilder: (context, animation, secondaryAnimation, child) {

@@ -1,10 +1,11 @@
-// lib/screens/home_shell.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/account/controllers/account_providers.dart';
+import 'package:pitaka/features/account/models/institution.dart';
+import 'package:pitaka/features/category/controllers/category_providers.dart';
+import 'package:pitaka/features/category/models/category.dart';
 import 'package:pitaka/core/utils/page_transitions.dart';
 import 'package:pitaka/core/widgets/floating_nav_bar.dart';
 import 'package:pitaka/core/widgets/shared_axis_tab_switcher.dart';
@@ -26,6 +27,32 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   NavTab _selectedTab = NavTab.home;
   bool _isMenuOpen = false; // Tracks if the floating menu is currently open
   bool _isNavBarVisible = true; // Tracks if the navigation bar is visible
+  bool _isPrewarmed = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isPrewarmed) {
+      _isPrewarmed = true;
+      _prewarmAssetsAndState();
+    }
+  }
+
+  void _prewarmAssetsAndState() {
+    // 1. Precache institution icons into GPU memory to eliminate image decoding jank on first screen open
+    for (final inst in InstitutionRegistry.all) {
+      precacheImage(
+        AssetImage('assets/icons/institutions/${inst.iconKey}.png'),
+        context,
+        onError: (exception, stackTrace) {},
+      );
+    }
+
+    // 2. Pre-read category and account state into Riverpod cache so frame 0 doesn't wait for SQLite queries
+    ref.read(categoriesByTypeProvider(CategoryType.expense));
+    ref.read(categoriesByTypeProvider(CategoryType.income));
+    ref.read(accountsProvider);
+  }
 
   static const List<Widget> _screens = [
     DashboardScreen(),
@@ -75,59 +102,48 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _MenuOption(
-                      heroTag: 'hero_income_option',
                       icon: Icons.arrow_upward_rounded,
                       color: const Color(0xFF2E9F5D),
                       label: 'Income',
                       onTap: () {
-                        final nav = Navigator.of(dialogContext);
-                        nav.pop();
+                        final nav = Navigator.of(context);
+                        Navigator.of(dialogContext).pop();
                         nav.push(
                           SmoothExpandRoute(
                             alignment: const Alignment(0.6, 0.65),
-                            page: const ExpenseScreen(
-                              initialIsExpense: false,
-                              heroTag: 'hero_income_option',
-                            ),
+                            page: const ExpenseScreen(initialIsExpense: false),
                           ),
                         );
                       },
                     ),
                     const Divider(height: 1, color: Color(0xFFF5F7F5)),
                     _MenuOption(
-                      heroTag: 'hero_expense_option',
                       icon: Icons.arrow_downward_rounded,
                       color: const Color(0xFFD64545),
                       label: 'Expense',
                       onTap: () {
-                        final nav = Navigator.of(dialogContext);
-                        nav.pop();
+                        final nav = Navigator.of(context);
+                        Navigator.of(dialogContext).pop();
                         nav.push(
                           SmoothExpandRoute(
                             alignment: const Alignment(0.6, 0.73),
-                            page: const ExpenseScreen(
-                              initialIsExpense: true,
-                              heroTag: 'hero_expense_option',
-                            ),
+                            page: const ExpenseScreen(initialIsExpense: true),
                           ),
                         );
                       },
                     ),
                     const Divider(height: 1, color: Color(0xFFF5F7F5)),
                     _MenuOption(
-                      heroTag: 'hero_transfer_option',
                       icon: Icons.swap_horiz_rounded,
                       color: const Color(0xFF2D88D4),
                       label: 'Transfer',
                       onTap: () {
-                        final nav = Navigator.of(dialogContext);
-                        nav.pop();
+                        final nav = Navigator.of(context);
+                        Navigator.of(dialogContext).pop();
                         nav.push(
                           SmoothExpandRoute(
                             alignment: const Alignment(0.6, 0.81),
-                            page: const TransferScreen(
-                              heroTag: 'hero_transfer_option',
-                            ),
+                            page: const TransferScreen(),
                           ),
                         );
                       },
@@ -208,14 +224,12 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 }
 
 class _MenuOption extends StatelessWidget {
-  final String heroTag;
   final IconData icon;
   final Color color;
   final String label;
   final VoidCallback onTap;
 
   const _MenuOption({
-    required this.heroTag,
     required this.icon,
     required this.color,
     required this.label,
@@ -224,28 +238,25 @@ class _MenuOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Hero(
-      tag: heroTag,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-            child: Row(
-              children: [
-                Icon(icon, color: color, size: 22),
-                const SizedBox(width: 14),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF222222),
-                  ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(width: 14),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF222222),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

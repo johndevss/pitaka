@@ -147,29 +147,14 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
           ),
         ),
         leadingWidth: 90,
-        title: widget.heroTag != null
-            ? Hero(
-                tag: widget.heroTag!,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Text(
-                    _isExpense ? 'New Expense' : 'New Income',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF222222),
-                    ),
-                  ),
-                ),
-              )
-            : Text(
-                _isExpense ? 'New Expense' : 'New Income',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF222222),
-                ),
-              ),
+        title: Text(
+          _isExpense ? 'New Expense' : 'New Income',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF222222),
+          ),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -401,6 +386,8 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                                           'assets/icons/institutions/${acc.iconKey}.png',
                                           width: 24,
                                           height: 24,
+                                          cacheWidth: 48,
+                                          cacheHeight: 48,
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) {
