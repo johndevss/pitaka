@@ -3,6 +3,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/account/data/account_dao.dart';
 import 'package:pitaka/features/account/models/account.dart';
+import 'package:pitaka/features/account/models/account_interest_config.dart';
+import 'package:pitaka/features/account/services/interest_posting_worker.dart';
 
 final accountDaoProvider = Provider<AccountDao>((ref) {
   return AccountDao();
@@ -25,11 +27,40 @@ class AccountsController extends AsyncNotifier<List<Account>> {
     });
   }
 
+  Future<void> addAccountWithConfig(
+    Account account,
+    AccountInterestConfig config,
+  ) async {
+    state = AsyncLoading<List<Account>>().copyWithPrevious(state);
+    state = await AsyncValue.guard(() async {
+      final dao = ref.read(accountDaoProvider);
+      await dao.insertAccountWithConfig(account, config);
+      ref.invalidate(totalEquityByCurrencyProvider);
+      return dao.getAllAccounts();
+    });
+  }
+
   Future<void> updateAccount(Account account) async {
     state = AsyncLoading<List<Account>>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final dao = ref.read(accountDaoProvider);
       await dao.updateAccount(account);
+      if (account.id != null) {
+        ref.invalidate(accountBalanceProvider(account.id!));
+      }
+      ref.invalidate(totalEquityByCurrencyProvider);
+      return dao.getAllAccounts();
+    });
+  }
+
+  Future<void> updateAccountWithConfig(
+    Account account,
+    AccountInterestConfig? config,
+  ) async {
+    state = AsyncLoading<List<Account>>().copyWithPrevious(state);
+    state = await AsyncValue.guard(() async {
+      final dao = ref.read(accountDaoProvider);
+      await dao.updateAccountWithConfig(account, config);
       if (account.id != null) {
         ref.invalidate(accountBalanceProvider(account.id!));
       }
@@ -56,6 +87,15 @@ final accountsControllerProvider =
 
 final accountsProvider = FutureProvider<List<Account>>((ref) async {
   return ref.watch(accountsControllerProvider.future);
+});
+
+final interestPostingWorkerProvider = Provider<InterestPostingWorker>((ref) {
+  return InterestPostingWorker();
+});
+
+final autoInterestPostingProvider = FutureProvider<void>((ref) async {
+  final worker = ref.watch(interestPostingWorkerProvider);
+  await worker.processAllAccounts();
 });
 
 // Computed balance for a single account (starting balance + all transactions)

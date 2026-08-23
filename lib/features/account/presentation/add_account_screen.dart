@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:pitaka/features/account/controllers/account_providers.dart';
 import 'package:pitaka/features/account/models/account.dart';
+import 'package:pitaka/features/account/models/account_interest_config.dart';
 import 'package:pitaka/features/account/data/institutions.dart';
 import 'package:pitaka/core/utils/currency_formatter.dart';
 import 'package:pitaka/core/widgets/interest_type_selector.dart';
@@ -112,31 +113,50 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
 
     final newAccount = Account(
       name: _nameController.text.trim(),
-      type: accountType,
-      provider: _selectedInstitution?.name ?? 'custom',
-      balance: double.parse(_balanceController.text),
+      institutionId: _selectedInstitution?.id,
+      accountType: accountType,
+      initialBalance: double.parse(_balanceController.text),
       iconKey: _selectedInstitution?.iconKey,
       currency: _selectedInstitution?.currency ?? 'PHP',
-      interestRate:
-          ((accountType == 'bank' || accountType == 'e-wallet') &&
-              _hasInterest &&
-              _interestController.text.trim().isNotEmpty)
-          ? double.tryParse(_interestController.text)
-          : null,
-      interestType:
-          ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest)
-          ? _selectedInterestType
-          : 'none',
+      provider: _selectedInstitution?.name ?? 'custom',
       createdAt: DateTime.now(),
     );
 
-    await ref.read(accountsControllerProvider.notifier).addAccount(newAccount);
+    if ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest) {
+      final ratePercent =
+          double.tryParse(_interestController.text.trim()) ?? 0.0;
+      final rateDecimal = ratePercent / 100.0;
+      final preset = _selectedInstitution?.defaultInterest;
+
+      final config = AccountInterestConfig(
+        accountId: 0,
+        interestRate: rateDecimal,
+        calcMode: _selectedInterestType == 'daily'
+            ? 'daily_payout'
+            : 'daily_accrue_monthly_payout',
+        payoutFrequency: _selectedInterestType == 'daily' ? 'daily' : 'monthly',
+        payoutDay: preset?.payoutDay ?? 1,
+        withholdingTaxRate: preset?.withholdingTaxRate ?? 0.20,
+        tierCapAmount: preset?.tierCapAmount,
+        secondaryInterestRate: preset?.secondaryInterestRate,
+        autoPost: true,
+      );
+
+      await ref
+          .read(accountsControllerProvider.notifier)
+          .addAccountWithConfig(newAccount, config);
+    } else {
+      await ref
+          .read(accountsControllerProvider.notifier)
+          .addAccount(newAccount);
+    }
+
     logger.i("Successfully saved account: ${newAccount.name}");
 
     if (!mounted) return;
     showSuccessToast(
       context,
-      'Account "${(newAccount.name != null && newAccount.name!.isNotEmpty) ? newAccount.name : newAccount.provider}" added successfully',
+      'Account "${(newAccount.name != null && newAccount.name!.isNotEmpty) ? newAccount.name! : newAccount.providerName}" added successfully',
     );
     Navigator.of(context).pop();
   }
@@ -236,6 +256,22 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
                         setState(() {
                           _selectedInstitution = institution;
                           _showProviderError = false;
+                          if (institution.hasInterest &&
+                              institution.defaultInterest != null) {
+                            _hasInterest = true;
+                            final preset = institution.defaultInterest!;
+                            _interestController.text =
+                                (preset.defaultRate * 100)
+                                    .toStringAsFixed(1)
+                                    .replaceAll(RegExp(r'\.0$'), '');
+                            _selectedInterestType =
+                                preset.calcMode == 'daily_payout'
+                                ? 'daily'
+                                : 'monthly';
+                          } else {
+                            _hasInterest = false;
+                            _interestController.clear();
+                          }
                         });
                       },
                       child: Container(

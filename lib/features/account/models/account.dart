@@ -107,8 +107,28 @@ class Account {
           : DateTime.now(),
       interestRate: (map['interest_rate'] as num?)?.toDouble(),
       calcMode: map['calc_mode'] as String?,
-      interestType:
-          map['interest_type'] as String? ?? (map['calc_mode'] ?? 'none'),
+      interestType: () {
+        final rawCalc = map['calc_mode'] as String?;
+        final rawFreq = map['payout_frequency'] as String?;
+        final rawType = map['interest_type'] as String?;
+
+        if (rawFreq != null && rawFreq.isNotEmpty) {
+          return rawFreq;
+        }
+        if (rawCalc != null) {
+          if (rawCalc == 'daily_payout' || rawCalc == 'daily') {
+            return 'daily';
+          }
+          if (rawCalc == 'daily_accrue_monthly_payout' ||
+              rawCalc == 'monthly') {
+            return 'monthly';
+          }
+        }
+        if (rawType != null && rawType != 'none') {
+          return rawType;
+        }
+        return null;
+      }(),
       provider: map['provider'] as String? ?? map['institution_id'] as String?,
       lastInterestAppliedDate: map['last_interest_applied_date'] != null
           ? DateTime.parse(map['last_interest_applied_date'] as String)

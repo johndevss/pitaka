@@ -50,6 +50,7 @@ class AccountDao {
         a.*,
         aic.interest_rate,
         aic.calc_mode,
+        aic.payout_frequency,
         (COALESCE(a.initial_balance, a.balance) + COALESCE(tx.net_tx, 0)) AS current_balance,
         COALESCE(il.pending_accrued_interest, 0.0) AS pending_interest
       FROM accounts a
@@ -81,6 +82,7 @@ class AccountDao {
         a.*,
         aic.interest_rate,
         aic.calc_mode,
+        aic.payout_frequency,
         (COALESCE(a.initial_balance, a.balance) + COALESCE(tx.net_tx, 0)) AS current_balance,
         COALESCE(il.pending_accrued_interest, 0.0) AS pending_interest
       FROM accounts a
@@ -113,6 +115,37 @@ class AccountDao {
       where: 'id = ?',
       whereArgs: [account.id],
     );
+  }
+
+  /// Updates an account and its interest configuration atomically.
+  Future<void> updateAccountWithConfig(
+    Account account,
+    AccountInterestConfig? config,
+  ) async {
+    final db = await DatabaseHelper.initDb();
+    await db.transaction((txn) async {
+      await txn.update(
+        'accounts',
+        account.toMap(),
+        where: 'id = ?',
+        whereArgs: [account.id],
+      );
+
+      if (config != null) {
+        final configMap = config.toMap()..['account_id'] = account.id;
+        await txn.insert(
+          'account_interest_configs',
+          configMap,
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      } else if (account.id != null) {
+        await txn.delete(
+          'account_interest_configs',
+          where: 'account_id = ?',
+          whereArgs: [account.id],
+        );
+      }
+    });
   }
 
   // DELETE

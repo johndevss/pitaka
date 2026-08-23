@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/account/models/account.dart';
+import 'package:pitaka/features/account/models/account_interest_config.dart';
+import 'package:pitaka/features/account/data/institutions.dart';
 import 'package:pitaka/features/account/controllers/account_providers.dart';
 import 'package:pitaka/features/transaction/controllers/transaction_providers.dart';
 import 'package:pitaka/core/utils/currency_formatter.dart';
@@ -40,14 +42,17 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
     _currentAccount = widget.account;
     _nameController = TextEditingController(text: widget.account.name ?? '');
     _hasInterest =
-        widget.account.interestType != null &&
-        widget.account.interestType != 'none';
+        widget.account.interestRate != null && widget.account.interestRate! > 0;
     _selectedInterestType = _hasInterest
         ? (widget.account.interestType ?? 'daily')
         : 'daily';
+
+    final ratePercent = widget.account.interestRate != null
+        ? (widget.account.interestRate! * 100.0)
+        : null;
     _interestController = TextEditingController(
-      text: widget.account.interestRate != null
-          ? widget.account.interestRate.toString()
+      text: ratePercent != null
+          ? ratePercent.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')
           : '',
     );
   }
@@ -63,27 +68,52 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final accountType = widget.account.type;
-
     final updatedAccount = _currentAccount.copyWith(
       name: _nameController.text.trim(),
-      interestRate:
-          ((accountType == 'bank' || accountType == 'e-wallet') &&
-              _hasInterest &&
-              _interestController.text.trim().isNotEmpty)
-          ? double.tryParse(_interestController.text)
-          : null,
-      interestType:
-          ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest)
-          ? _selectedInterestType
-          : 'none',
     );
 
-    await ref
-        .read(accountsControllerProvider.notifier)
-        .updateAccount(updatedAccount);
+    if ((accountType == 'bank' || accountType == 'e-wallet') && _hasInterest) {
+      final ratePercent =
+          double.tryParse(_interestController.text.trim()) ?? 0.0;
+      final rateDecimal = ratePercent / 100.0;
+
+      final inst = widget.account.institutionId != null
+          ? InstitutionRegistry.getById(widget.account.institutionId!)
+          : null;
+      final preset = inst?.defaultInterest;
+
+      final config = AccountInterestConfig(
+        accountId: _currentAccount.id!,
+        interestRate: rateDecimal,
+        calcMode: _selectedInterestType == 'daily'
+            ? 'daily_payout'
+            : 'daily_accrue_monthly_payout',
+        payoutFrequency: _selectedInterestType == 'daily' ? 'daily' : 'monthly',
+        payoutDay: preset?.payoutDay ?? 1,
+        withholdingTaxRate: preset?.withholdingTaxRate ?? 0.20,
+        tierCapAmount: preset?.tierCapAmount,
+        secondaryInterestRate: preset?.secondaryInterestRate,
+        autoPost: true,
+      );
+
+      await ref
+          .read(accountsControllerProvider.notifier)
+          .updateAccountWithConfig(updatedAccount, config);
+    } else {
+      await ref
+          .read(accountsControllerProvider.notifier)
+          .updateAccountWithConfig(updatedAccount, null);
+    }
+
+    // Refresh current account from controller state
+    final accounts = ref.read(accountsControllerProvider).value ?? [];
+    final refreshed = accounts.firstWhere(
+      (a) => a.id == _currentAccount.id,
+      orElse: () => updatedAccount,
+    );
 
     setState(() {
-      _currentAccount = updatedAccount;
+      _currentAccount = refreshed;
       _isEditing = false; // Return to transactions view after saving
     });
   }

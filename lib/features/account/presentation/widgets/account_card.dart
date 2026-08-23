@@ -188,6 +188,27 @@ class _AccountCardState extends ConsumerState<AccountCard> {
                       style: TextStyle(color: Colors.white70),
                     ),
                   ),
+                  if (account.pendingInterest > 0) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.trending_up,
+                          size: 12,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '+${formatMoney(account.pendingInterest, account.currency)} pending',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
