@@ -113,7 +113,10 @@ class AccountsScreen extends ConsumerWidget {
       ),
       itemCount: sectionAccounts.length,
       itemBuilder: (context, index) {
-        return AccountCard(account: sectionAccounts[index]);
+        return AccountCard(
+          account: sectionAccounts[index],
+          heroTagPrefix: 'accounts',
+        );
       },
     );
   }

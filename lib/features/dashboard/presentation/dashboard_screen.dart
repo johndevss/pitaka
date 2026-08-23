@@ -158,7 +158,10 @@ class DashboardScreen extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         return SizedBox(
                           width: 160,
-                          child: AccountCard(account: sortedAccounts[index]),
+                          child: AccountCard(
+                            account: sortedAccounts[index],
+                            heroTagPrefix: 'dashboard',
+                          ),
                         );
                       },
                     ),

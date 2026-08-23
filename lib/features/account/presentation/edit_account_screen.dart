@@ -6,11 +6,13 @@ import 'package:pitaka/features/transaction/controllers/transaction_providers.da
 import 'package:pitaka/core/utils/currency_formatter.dart';
 import 'package:pitaka/core/widgets/transaction_tile.dart';
 import 'package:pitaka/core/widgets/interest_type_selector.dart';
+import 'package:pitaka/features/account/presentation/widgets/account_card.dart';
 
 class AccountDetailsScreen extends ConsumerStatefulWidget {
   final Account account;
+  final String? heroTag;
 
-  const AccountDetailsScreen({super.key, required this.account});
+  const AccountDetailsScreen({super.key, required this.account, this.heroTag});
 
   @override
   ConsumerState<AccountDetailsScreen> createState() =>
@@ -173,20 +175,22 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- FLOATING BALANCE BADGE ---
+            // --- FLOATING BALANCE BADGE (Matches AccountCard Hero) ---
             Hero(
-              tag: 'account_card_${widget.account.id}',
+              tag: widget.heroTag ?? 'card_card_${widget.account.id}',
               child: Material(
                 color: Colors.transparent,
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1F8A5B),
+                    color: colorForAccount(_currentAccount),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF1F8A5B).withValues(alpha: 0.3),
+                        color: colorForAccount(
+                          _currentAccount,
+                        ).withValues(alpha: 0.35),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
@@ -195,16 +199,81 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              shape: BoxShape.circle,
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: _currentAccount.iconKey != null
+                                ? Image.asset(
+                                    'assets/icons/institutions/${_currentAccount.iconKey}.png',
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) => Icon(
+                                          iconForType(_currentAccount.type),
+                                          size: 18,
+                                          color: Colors.white,
+                                        ),
+                                  )
+                                : Icon(
+                                    iconForType(_currentAccount.type),
+                                    size: 18,
+                                    color: Colors.white,
+                                  ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              displayNameForProvider(_currentAccount.provider),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      if (_currentAccount.name != null &&
+                          _currentAccount.name!.isNotEmpty) ...[
+                        Text(
+                          _currentAccount.name!,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                      ],
+                      Text(
+                        subtitleForAccount(_currentAccount),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.white70,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       const Text(
                         'CURRENT BALANCE',
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
                           color: Colors.white70,
                           letterSpacing: 1.0,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 4),
                       balanceAsync.when(
                         data: (balance) => Text(
                           formatMoney(balance, widget.account.currency),
