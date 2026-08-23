@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pitaka/features/account/controllers/account_providers.dart';
 import 'package:pitaka/core/utils/page_transitions.dart';
 import 'package:pitaka/core/widgets/floating_nav_bar.dart';
 import 'package:pitaka/core/widgets/shared_axis_tab_switcher.dart';
@@ -13,14 +15,14 @@ import 'package:pitaka/features/transaction/presentation/transfer_screen.dart';
 import 'package:pitaka/features/category/presentation/manage_screen.dart';
 import 'package:pitaka/features/transaction/presentation/history_screen.dart';
 
-class HomeShell extends StatefulWidget {
+class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
 
   @override
-  State<HomeShell> createState() => _HomeShellState();
+  ConsumerState<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
+class _HomeShellState extends ConsumerState<HomeShell> {
   NavTab _selectedTab = NavTab.home;
   bool _isMenuOpen = false; // Tracks if the floating menu is currently open
   bool _isNavBarVisible = true; // Tracks if the navigation bar is visible
@@ -157,6 +159,9 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    // Run background interest posting check on app launch
+    ref.watch(autoInterestPostingProvider);
+
     return Scaffold(
       extendBody: true,
       body: NotificationListener<UserScrollNotification>(
