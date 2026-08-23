@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:pitaka/core/utils/page_transitions.dart';
 import 'package:pitaka/core/widgets/floating_nav_bar.dart';
 import 'package:pitaka/core/widgets/shared_axis_tab_switcher.dart';
 import 'package:pitaka/features/account/presentation/accounts_screen.dart';
@@ -38,12 +39,12 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
-  void _onAddPressed() async {
+  void _onAddPressed() {
     HapticFeedback.mediumImpact();
     // Turn button state to 'X' and gray
     setState(() => _isMenuOpen = true);
 
-    await showGeneralDialog(
+    showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
@@ -51,7 +52,7 @@ class _HomeShellState extends State<HomeShell> {
       transitionDuration: const Duration(
         milliseconds: 150,
       ), // 2. Faster animation speed (150ms)
-      pageBuilder: (context, animation, secondaryAnimation) {
+      pageBuilder: (dialogContext, animation, secondaryAnimation) {
         return Align(
           alignment: Alignment.bottomRight,
           child: Padding(
@@ -76,11 +77,11 @@ class _HomeShellState extends State<HomeShell> {
                       color: const Color(0xFF2E9F5D),
                       label: 'Income',
                       onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                const ExpenseScreen(initialIsExpense: false),
+                        final nav = Navigator.of(dialogContext);
+                        nav.pop();
+                        nav.push(
+                          SmoothModalRoute(
+                            page: const ExpenseScreen(initialIsExpense: false),
                           ),
                         );
                       },
@@ -91,11 +92,11 @@ class _HomeShellState extends State<HomeShell> {
                       color: const Color(0xFFD64545),
                       label: 'Expense',
                       onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                const ExpenseScreen(initialIsExpense: true),
+                        final nav = Navigator.of(dialogContext);
+                        nav.pop();
+                        nav.push(
+                          SmoothModalRoute(
+                            page: const ExpenseScreen(initialIsExpense: true),
                           ),
                         );
                       },
@@ -106,11 +107,10 @@ class _HomeShellState extends State<HomeShell> {
                       color: const Color(0xFF2D88D4),
                       label: 'Transfer',
                       onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const TransferScreen(),
-                          ),
+                        final nav = Navigator.of(dialogContext);
+                        nav.pop();
+                        nav.push(
+                          SmoothModalRoute(page: const TransferScreen()),
                         );
                       },
                     ),
@@ -131,12 +131,12 @@ class _HomeShellState extends State<HomeShell> {
           child: FadeTransition(opacity: anim, child: child),
         );
       },
-    );
-
-    // Revert button back to '+' when menu closes
-    if (mounted) {
-      setState(() => _isMenuOpen = false);
-    }
+    ).then((_) {
+      // Revert button back to '+' when menu closes
+      if (mounted) {
+        setState(() => _isMenuOpen = false);
+      }
+    });
   }
 
   @override

@@ -373,54 +373,60 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             ),
           ),
           accountsAsync.when(
-            data: (accounts) => DropdownButtonHideUnderline(
-              child: DropdownButton<Account>(
-                isExpanded: true,
-                value: value,
-                hint: const Text('Select', style: TextStyle(fontSize: 14)),
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-                items: accounts.map((acc) {
-                  return DropdownMenuItem(
-                    value: acc,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: Image.asset(
-                            'assets/icons/institutions/${acc.iconKey}.png',
-                            width: 24,
-                            height: 24,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.account_balance_wallet,
-                                size: 18,
-                                color: Colors.grey.shade400,
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            acc.name?.isNotEmpty == true
-                                ? acc.name!
-                                : acc.provider,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+            data: (accounts) {
+              final selectedValue = (value != null && accounts.contains(value))
+                  ? value
+                  : null;
+
+              return DropdownButtonHideUnderline(
+                child: DropdownButton<Account>(
+                  isExpanded: true,
+                  value: selectedValue,
+                  hint: const Text('Select', style: TextStyle(fontSize: 14)),
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+                  items: accounts.map((acc) {
+                    return DropdownMenuItem(
+                      value: acc,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.asset(
+                              'assets/icons/institutions/${acc.iconKey}.png',
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.account_balance_wallet,
+                                  size: 18,
+                                  color: Colors.grey.shade400,
+                                );
+                              },
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: onChanged,
-              ),
-            ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              acc.name?.isNotEmpty == true
+                                  ? acc.name!
+                                  : acc.provider,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: onChanged,
+                ),
+              );
+            },
             loading: () => const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: SizedBox(

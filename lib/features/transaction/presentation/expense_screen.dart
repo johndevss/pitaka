@@ -348,14 +348,14 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                     flex: 2,
                     child: accountsAsync.when(
                       data: (accounts) {
-                        // Default to first account once loaded, if none picked yet.
                         if (_selectedAccount == null && accounts.isNotEmpty) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) {
-                              setState(() => _selectedAccount = accounts.first);
-                            }
-                          });
+                          _selectedAccount = accounts.first;
                         }
+                        final selectedValue =
+                            accounts.contains(_selectedAccount)
+                            ? _selectedAccount
+                            : (accounts.isNotEmpty ? accounts.first : null);
+
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
@@ -365,7 +365,11 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<Account>(
                               isExpanded: true,
-                              value: _selectedAccount,
+                              value: selectedValue,
+                              hint: const Text(
+                                'Select Account',
+                                style: TextStyle(fontSize: 14),
+                              ),
                               icon: const Icon(
                                 Icons.keyboard_arrow_down_rounded,
                               ),

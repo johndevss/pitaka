@@ -174,56 +174,62 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // --- FLOATING BALANCE BADGE ---
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F8A5B),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF1F8A5B).withValues(alpha: 0.3),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'CURRENT BALANCE',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white70,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  balanceAsync.when(
-                    data: (balance) => Text(
-                      formatMoney(balance, widget.account.currency),
-                      style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+            Hero(
+              tag: 'account_card_${widget.account.id}',
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F8A5B),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1F8A5B).withValues(alpha: 0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
                       ),
-                    ),
-                    loading: () => const SizedBox(
-                      height: 32,
-                      width: 32,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    ),
-                    error: (err, stack) => const Text(
-                      '—',
-                      style: TextStyle(color: Colors.white70),
-                    ),
+                    ],
                   ),
-                ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'CURRENT BALANCE',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white70,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      balanceAsync.when(
+                        data: (balance) => Text(
+                          formatMoney(balance, widget.account.currency),
+                          style: const TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        loading: () => const SizedBox(
+                          height: 32,
+                          width: 32,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                        error: (err, stack) => const Text(
+                          '—',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
 

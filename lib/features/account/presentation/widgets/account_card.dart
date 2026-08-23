@@ -4,6 +4,7 @@ import 'package:pitaka/features/account/controllers/account_providers.dart';
 import 'package:pitaka/core/utils/currency_formatter.dart';
 import 'package:pitaka/features/account/models/account.dart';
 import 'package:pitaka/features/account/presentation/edit_account_screen.dart';
+import 'package:pitaka/core/utils/page_transitions.dart';
 
 class AccountCard extends ConsumerWidget {
   final Account account;
@@ -19,130 +20,139 @@ class AccountCard extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => AccountDetailsScreen(account: account),
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(SmoothSlideRoute(page: AccountDetailsScreen(account: account)));
       },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: cardColor.withValues(alpha: 0.35),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
+      child: Hero(
+        tag: 'account_card_${account.id}',
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: cardColor.withValues(alpha: 0.35),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Icon + Provider Name + More Button
-            Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    shape: BoxShape.circle,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: account.iconKey != null
-                      ? Image.asset(
-                          'assets/icons/institutions/${account.iconKey}.png',
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(
-                            _iconForType(account.type),
-                            size: 18,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Icon(
-                          _iconForType(account.type),
-                          size: 18,
+                // Icon + Provider Name + More Button
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        shape: BoxShape.circle,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: account.iconKey != null
+                          ? Image.asset(
+                              'assets/icons/institutions/${account.iconKey}.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(
+                                    _iconForType(account.type),
+                                    size: 18,
+                                    color: Colors.white,
+                                  ),
+                            )
+                          : Icon(
+                              _iconForType(account.type),
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _displayNameForProvider(account.provider),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.more_horiz,
+                      size: 18,
+                      color: Colors.white70,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _displayNameForProvider(account.provider),
+                const SizedBox(
+                  height: 6,
+                ), // Space between provider row and account name
+                // ACCOUNT NAME: Custom nickname chosen by the user
+                if (account.name != null && account.name!.isNotEmpty) ...[
+                  Text(
+                    account.name!,
                     style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 2),
+                ],
+
+                // SUBTITLE: Account type (e.g., Debit · PHP)
+                Text(
+                  _subtitleForAccount(account),
+                  style: const TextStyle(fontSize: 11, color: Colors.white70),
                 ),
-                const Icon(Icons.more_horiz, size: 18, color: Colors.white70),
+
+                const Spacer(),
+
+                const Text(
+                  'BALANCE',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white70,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                balanceAsync.when(
+                  data: (balance) => Text(
+                    formatMoney(balance, account.currency),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  loading: () => const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  ),
+                  error: (err, stack) =>
+                      const Text('—', style: TextStyle(color: Colors.white70)),
+                ),
               ],
             ),
-            const SizedBox(
-              height: 6,
-            ), // Space between provider row and account name
-            // ACCOUNT NAME: Custom nickname chosen by the user
-            if (account.name != null && account.name!.isNotEmpty) ...[
-              Text(
-                account.name!,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-            ],
-
-            // SUBTITLE: Account type (e.g., Debit · PHP)
-            Text(
-              _subtitleForAccount(account),
-              style: const TextStyle(fontSize: 11, color: Colors.white70),
-            ),
-
-            const Spacer(),
-
-            const Text(
-              'BALANCE',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: Colors.white70,
-                letterSpacing: 0.8,
-              ),
-            ),
-            const SizedBox(height: 2),
-            balanceAsync.when(
-              data: (balance) => Text(
-                formatMoney(balance, account.currency),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              loading: () => const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              ),
-              error: (err, stack) =>
-                  const Text('—', style: TextStyle(color: Colors.white70)),
-            ),
-          ],
+          ),
         ),
       ),
     );

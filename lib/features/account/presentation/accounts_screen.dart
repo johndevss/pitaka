@@ -6,6 +6,8 @@ import 'package:pitaka/core/utils/currency_formatter.dart';
 import 'package:pitaka/features/account/presentation/widgets/account_card.dart';
 import 'package:pitaka/features/account/presentation/add_account_screen.dart';
 
+import 'package:pitaka/core/utils/page_transitions.dart';
+
 class AccountsScreen extends ConsumerWidget {
   const AccountsScreen({super.key});
 
@@ -22,11 +24,9 @@ class AccountsScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(right: 16.0),
             child: TextButton.icon(
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AddAccountScreen(),
-                  ),
-                );
+                Navigator.of(
+                  context,
+                ).push(SmoothModalRoute(page: const AddAccountScreen()));
               },
               icon: const Icon(Icons.add, size: 16),
               label: const Text(

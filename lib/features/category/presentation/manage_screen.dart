@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/category/controllers/category_providers.dart';
 import 'package:pitaka/features/category/presentation/categories_screen.dart';
 
+import 'package:pitaka/core/utils/page_transitions.dart';
+
 class ManageScreen extends ConsumerWidget {
   const ManageScreen({super.key});
 
@@ -44,9 +46,9 @@ class ManageScreen extends ConsumerWidget {
                   ? '$categoryCount ${categoryCount == 1 ? 'category' : 'categories'}'
                   : 'Loading…',
               onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const CategoriesScreen()),
-                );
+                Navigator.of(
+                  context,
+                ).push(SmoothSlideRoute(page: const CategoriesScreen()));
               },
             ),
             const SizedBox(height: 10),
