@@ -1,4 +1,4 @@
-// lib/data/transaction_dao.dart
+// lib/features/transaction/data/transaction_dao.dart
 
 import 'package:sqflite/sqflite.dart';
 import 'package:pitaka/features/transaction/models/transaction_model.dart';
@@ -36,7 +36,6 @@ class TransactionDao {
     final dao = accountDao ?? AccountDao();
 
     await db.transaction((txn) async {
-      // Evaluate actual account balance inside the atomic transaction
       final liveBalance =
           currentBalance ?? await dao.getCurrentBalance(expense.accountId, txn);
 
@@ -57,26 +56,39 @@ class TransactionDao {
     });
   }
 
-  // READ — all transactions, most recent first
+  // READ — all transactions, most recent first, with joined category name
   Future<List<TransactionModel>> getAllTransactions() async {
     final db = await DatabaseHelper.initDb();
-    final result = await db.query('transactions', orderBy: 'created_at DESC');
+    final result = await db.rawQuery('''
+      SELECT 
+        t.*,
+        COALESCE(c.name, t.category) AS category
+      FROM transactions t
+      LEFT JOIN categories c ON t.category_id = c.id
+      ORDER BY t.created_at DESC
+    ''');
     return result.map((map) => TransactionModel.fromMap(map)).toList();
   }
 
-  // READ — transactions for a single account (e.g. viewing one account's history)
+  // READ — transactions for a single account
   Future<List<TransactionModel>> getTransactionsByAccount(int accountId) async {
     final db = await DatabaseHelper.initDb();
-    final result = await db.query(
-      'transactions',
-      where: 'account_id = ?',
-      whereArgs: [accountId],
-      orderBy: 'created_at DESC',
+    final result = await db.rawQuery(
+      '''
+      SELECT 
+        t.*,
+        COALESCE(c.name, t.category) AS category
+      FROM transactions t
+      LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.account_id = ?
+      ORDER BY t.created_at DESC
+    ''',
+      [accountId],
     );
     return result.map((map) => TransactionModel.fromMap(map)).toList();
   }
 
-  // READ — transactions from today (or a specific date) with precise millisecond boundaries
+  // READ — transactions from today (or a specific date)
   Future<List<TransactionModel>> getTodayTransactions([
     DateTime? targetDate,
   ]) async {
@@ -103,12 +115,19 @@ class TransactionDao {
       999,
     ).toIso8601String();
 
-    final result = await db.query(
-      'transactions',
-      where: 'created_at BETWEEN ? AND ?',
-      whereArgs: [startOfDay, endOfDay],
-      orderBy: 'created_at DESC',
+    final result = await db.rawQuery(
+      '''
+      SELECT 
+        t.*,
+        COALESCE(c.name, t.category) AS category
+      FROM transactions t
+      LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.created_at BETWEEN ? AND ?
+      ORDER BY t.created_at DESC
+    ''',
+      [startOfDay, endOfDay],
     );
+
     return result.map((map) => TransactionModel.fromMap(map)).toList();
   }
 

@@ -417,7 +417,7 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                                         child: Text(
                                           acc.name?.isNotEmpty == true
                                               ? acc.name!
-                                              : acc.provider,
+                                              : acc.providerName,
                                           style: const TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,

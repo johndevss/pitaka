@@ -108,10 +108,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
     final toDisplayName = (_toAccount!.name?.isNotEmpty == true)
         ? _toAccount!.name!
-        : _toAccount!.provider;
+        : _toAccount!.providerName;
     final fromDisplayName = (_fromAccount!.name?.isNotEmpty == true)
         ? _fromAccount!.name!
-        : _fromAccount!.provider;
+        : _fromAccount!.providerName;
 
     final customNote = _noteController.text.trim();
     final expenseNote = customNote.isEmpty
@@ -428,7 +428,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                             child: Text(
                               acc.name?.isNotEmpty == true
                                   ? acc.name!
-                                  : acc.provider,
+                                  : acc.providerName,
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,

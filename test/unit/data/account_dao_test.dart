@@ -4,6 +4,7 @@ import 'package:pitaka/features/account/data/account_dao.dart';
 import 'package:pitaka/core/database/database_helper.dart';
 import 'package:pitaka/features/transaction/data/transaction_dao.dart';
 import 'package:pitaka/features/account/models/account.dart';
+import 'package:pitaka/features/account/models/account_interest_config.dart';
 import 'package:pitaka/features/transaction/models/transaction_model.dart';
 
 void main() {
@@ -151,4 +152,32 @@ void main() {
       },
     );
   });
+
+  test(
+    'insertAccountWithConfig saves account and interest config atomically',
+    () async {
+      final account = Account(
+        name: 'SeaBank Savings',
+        institutionId: 'seabank',
+        accountType: 'bank',
+        initialBalance: 5000.0,
+        currency: 'PHP',
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      final config = AccountInterestConfig(
+        accountId: 0, // Assigned inside transaction
+        interestRate: 0.045,
+        calcMode: 'daily_accrue',
+      );
+
+      final id = await dao.insertAccountWithConfig(account, config);
+
+      final fetched = await dao.getAccountById(id);
+      expect(fetched, isNotNull);
+      expect(fetched!.name, equals('SeaBank Savings'));
+      expect(fetched.interestRate, equals(0.045));
+      expect(fetched.calcMode, equals('daily_accrue'));
+    },
+  );
 }

@@ -39,9 +39,11 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
     // Pre-fill edit form controllers
     _currentAccount = widget.account;
     _nameController = TextEditingController(text: widget.account.name ?? '');
-    _hasInterest = widget.account.interestType != 'none';
+    _hasInterest =
+        widget.account.interestType != null &&
+        widget.account.interestType != 'none';
     _selectedInterestType = _hasInterest
-        ? widget.account.interestType
+        ? (widget.account.interestType ?? 'daily')
         : 'daily';
     _interestController = TextEditingController(
       text: widget.account.interestRate != null
@@ -153,7 +155,7 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
     final displayName =
         _currentAccount.name != null && _currentAccount.name!.isNotEmpty
         ? _currentAccount.name!
-        : _currentAccount.provider.toUpperCase();
+        : _currentAccount.providerName.toUpperCase();
 
     return Scaffold(
       appBar: AppBar(
@@ -229,7 +231,9 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              displayNameForProvider(_currentAccount.provider),
+                              displayNameForProvider(
+                                _currentAccount.providerName,
+                              ),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,

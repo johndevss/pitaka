@@ -1,4 +1,4 @@
-// lib/models/category.dart
+// lib/features/category/models/category.dart
 
 enum CategoryType { expense, income }
 
@@ -17,6 +17,8 @@ class Category {
   final String iconKey;
   final String colorHex;
   final CategoryType type;
+  final int? parentId;
+  final bool isSystem;
   final DateTime createdAt;
 
   const Category({
@@ -25,6 +27,8 @@ class Category {
     required this.iconKey,
     required this.colorHex,
     required this.type,
+    this.parentId,
+    this.isSystem = false,
     required this.createdAt,
   });
 
@@ -35,6 +39,8 @@ class Category {
       'icon_key': iconKey,
       'color_hex': colorHex,
       'type': type.value,
+      'parent_id': parentId,
+      'is_system': isSystem ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -46,6 +52,8 @@ class Category {
       iconKey: map['icon_key'] as String,
       colorHex: map['color_hex'] as String,
       type: CategoryTypeStorage.fromValue(map['type'] as String),
+      parentId: map['parent_id'] as int?,
+      isSystem: (map['is_system'] as int?) == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
     );
   }
@@ -56,6 +64,8 @@ class Category {
     String? iconKey,
     String? colorHex,
     CategoryType? type,
+    int? parentId,
+    bool? isSystem,
     DateTime? createdAt,
   }) {
     return Category(
@@ -64,6 +74,8 @@ class Category {
       iconKey: iconKey ?? this.iconKey,
       colorHex: colorHex ?? this.colorHex,
       type: type ?? this.type,
+      parentId: parentId ?? this.parentId,
+      isSystem: isSystem ?? this.isSystem,
       createdAt: createdAt ?? this.createdAt,
     );
   }

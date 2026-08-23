@@ -113,7 +113,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          displayNameForProvider(account.provider),
+                          displayNameForProvider(account.providerName),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
