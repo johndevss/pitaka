@@ -84,29 +84,23 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
       return;
     }
 
-    final dao = ref.read(transactionDaoProvider);
     final signedAmount = _isExpense ? -_amountValue : _amountValue;
-
-    await dao.insertTransaction(
-      TransactionModel(
-        accountId: _selectedAccount!.id!,
-        amount: signedAmount,
-        category: _selectedCategory,
-        note: _noteController.text.trim().isEmpty
-            ? null
-            : _noteController.text.trim(),
-        createdAt: DateTime.now(),
-      ),
+    final transaction = TransactionModel(
+      accountId: _selectedAccount!.id!,
+      amount: signedAmount,
+      category: _selectedCategory,
+      note: _noteController.text.trim().isEmpty
+          ? null
+          : _noteController.text.trim(),
+      createdAt: DateTime.now(),
     );
+
+    await ref
+        .read(transactionsControllerProvider.notifier)
+        .addTransaction(transaction);
 
     final currency = _selectedAccount?.currency ?? 'PHP';
     final formattedAmount = formatMoney(_amountValue, currency);
-
-    // Invalidate every provider whose data this transaction affects.
-    ref.invalidate(allTransactionsProvider);
-    ref.invalidate(todayTransactionsProvider);
-    ref.invalidate(accountBalanceProvider(_selectedAccount!.id!));
-    ref.invalidate(totalEquityByCurrencyProvider);
 
     if (!mounted) return;
 

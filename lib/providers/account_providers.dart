@@ -8,9 +8,54 @@ final accountDaoProvider = Provider<AccountDao>((ref) {
   return AccountDao();
 });
 
+class AccountsController extends AsyncNotifier<List<Account>> {
+  @override
+  Future<List<Account>> build() async {
+    final dao = ref.watch(accountDaoProvider);
+    return dao.getAllAccounts();
+  }
+
+  Future<void> addAccount(Account account) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final dao = ref.read(accountDaoProvider);
+      await dao.insertAccount(account);
+      ref.invalidate(totalEquityByCurrencyProvider);
+      return dao.getAllAccounts();
+    });
+  }
+
+  Future<void> updateAccount(Account account) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final dao = ref.read(accountDaoProvider);
+      await dao.updateAccount(account);
+      if (account.id != null) {
+        ref.invalidate(accountBalanceProvider(account.id!));
+      }
+      ref.invalidate(totalEquityByCurrencyProvider);
+      return dao.getAllAccounts();
+    });
+  }
+
+  Future<void> deleteAccount(int accountId) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final dao = ref.read(accountDaoProvider);
+      await dao.deleteAccount(accountId);
+      ref.invalidate(totalEquityByCurrencyProvider);
+      return dao.getAllAccounts();
+    });
+  }
+}
+
+final accountsControllerProvider =
+    AsyncNotifierProvider<AccountsController, List<Account>>(
+      AccountsController.new,
+    );
+
 final accountsProvider = FutureProvider<List<Account>>((ref) async {
-  final dao = ref.watch(accountDaoProvider);
-  return dao.getAllAccounts();
+  return ref.watch(accountsControllerProvider.future);
 });
 
 // Computed balance for a single account (starting balance + all transactions)

@@ -58,7 +58,6 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final dao = ref.read(accountDaoProvider);
     final accountType = widget.account.type;
 
     final updatedAccount = _currentAccount.copyWith(
@@ -75,9 +74,9 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
           : 'none',
     );
 
-    await dao.updateAccount(updatedAccount);
-
-    _invalidateProviders();
+    await ref
+        .read(accountsControllerProvider.notifier)
+        .updateAccount(updatedAccount);
 
     setState(() {
       _currentAccount = updatedAccount;
@@ -88,23 +87,12 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
   Future<void> _deleteAccount() async {
     if (widget.account.id == null) return;
 
-    final dao = ref.read(accountDaoProvider);
-    await dao.deleteAccount(widget.account.id!);
-
-    _invalidateProviders();
+    await ref
+        .read(accountsControllerProvider.notifier)
+        .deleteAccount(widget.account.id!);
 
     if (!mounted) return;
     Navigator.of(context).pop();
-  }
-
-  void _invalidateProviders() {
-    ref.invalidate(accountsProvider);
-    ref.invalidate(totalEquityByCurrencyProvider);
-    ref.invalidate(allTransactionsProvider);
-    if (widget.account.id != null) {
-      ref.invalidate(accountBalanceProvider(widget.account.id!));
-      ref.invalidate(transactionsByAccountProvider(widget.account.id!));
-    }
   }
 
   void _showDeleteConfirmationModal() {

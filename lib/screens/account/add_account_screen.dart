@@ -103,7 +103,6 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
       return;
     }
 
-    final dao = ref.read(accountDaoProvider);
     final accountType = _getAccountTypeFromIndex(_tabController.index);
 
     final newAccount = Account(
@@ -126,11 +125,8 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
       createdAt: DateTime.now(),
     );
 
-    await dao.insertAccount(newAccount);
+    await ref.read(accountsControllerProvider.notifier).addAccount(newAccount);
     logger.i("Successfully saved account: ${newAccount.name}");
-
-    ref.invalidate(accountsProvider);
-    ref.invalidate(totalEquityByCurrencyProvider);
 
     if (!mounted) return;
     Navigator.of(context).pop();

@@ -101,7 +101,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       return;
     }
 
-    final dao = ref.read(transactionDaoProvider);
     final now = DateTime.now();
 
     final toDisplayName = (_toAccount!.name?.isNotEmpty == true)
@@ -138,20 +137,14 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     );
 
     try {
-      // Execute atomic transfer (evaluates balance and inserts both transactions in a single DB transaction)
-      await dao.transferFunds(expense, income);
+      // Execute atomic transfer via controller (evaluates balance and updates all transaction/account state automatically)
+      await ref
+          .read(transactionsControllerProvider.notifier)
+          .transfer(expense: expense, income: income);
 
       logger.i(
         'Successfully transferred $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',
       );
-
-      // Invalidate providers so the UI (Dashboard & Accounts) updates immediately
-      ref.invalidate(allTransactionsProvider);
-      ref.invalidate(todayTransactionsProvider);
-      ref.invalidate(accountBalanceProvider(_fromAccount!.id!));
-      ref.invalidate(accountBalanceProvider(_toAccount!.id!));
-      ref.invalidate(totalEquityByCurrencyProvider);
-      ref.invalidate(accountsProvider);
 
       if (!mounted) return;
       Navigator.of(context).pop();
