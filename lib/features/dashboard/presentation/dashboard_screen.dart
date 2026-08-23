@@ -21,13 +21,13 @@ class DashboardScreen extends ConsumerWidget {
     final equityAsync = ref.watch(totalEquityByCurrencyProvider);
     final transactionsAsync = ref.watch(allTransactionsProvider);
 
-    // ref.listen fires as a side effect (not during build) whenever
+    // Listen for automatic update checks
     ref.listen<AsyncValue<Map<String, dynamic>?>>(updateCheckProvider, (
       previous,
       next,
     ) {
       final updateInfo = next.value;
-      if (updateInfo != null) {
+      if (previous?.value == null && updateInfo != null) {
         showDialog(
           context: context,
           barrierDismissible: false,
