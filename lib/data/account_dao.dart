@@ -24,8 +24,8 @@ class AccountDao {
   }
 
   // READ — get a single account by id
-  Future<Account?> getAccountById(int id) async {
-    final db = await DatabaseHelper.initDb();
+  Future<Account?> getAccountById(int id, [DatabaseExecutor? executor]) async {
+    final db = executor ?? await DatabaseHelper.initDb();
     final result = await db.query('accounts', where: 'id = ?', whereArgs: [id]);
     if (result.isEmpty) return null;
     return Account.fromMap(result.first);
@@ -49,10 +49,13 @@ class AccountDao {
   }
 
   // Method to calculate the current balance of an account by summing its transactions
-  Future<double> getCurrentBalance(int accountId) async {
-    final db = await DatabaseHelper.initDb();
+  Future<double> getCurrentBalance(
+    int accountId, [
+    DatabaseExecutor? executor,
+  ]) async {
+    final db = executor ?? await DatabaseHelper.initDb();
 
-    final account = await getAccountById(accountId);
+    final account = await getAccountById(accountId, db);
     if (account == null) return 0.0;
 
     final result = await db.rawQuery(

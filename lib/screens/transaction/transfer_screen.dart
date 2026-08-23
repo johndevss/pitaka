@@ -138,13 +138,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     );
 
     try {
-      // fetch the LIVE balance right before transferring
-      final currentBalance = await ref.read(
-        accountBalanceProvider(_fromAccount!.id!).future,
-      );
-
-      // Pass currentBalance into transferFunds
-      await dao.transferFunds(expense, income, currentBalance: currentBalance);
+      // Execute atomic transfer (evaluates balance and inserts both transactions in a single DB transaction)
+      await dao.transferFunds(expense, income);
 
       logger.i(
         'Successfully transferred $_amountValue from ${_fromAccount!.name} to ${_toAccount!.name}',

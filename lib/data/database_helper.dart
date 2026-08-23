@@ -10,6 +10,10 @@ class DatabaseHelper {
   // Add a static variable to hold the open database connection
   static Database? _database;
 
+  static void setDatabaseForTesting(Database? db) {
+    _database = db;
+  }
+
   static Future<Database> initDb() async {
     // Return the cached instance immediately if it's already initialized
     if (_database != null) return _database!;
@@ -20,14 +24,14 @@ class DatabaseHelper {
     _database = await openDatabase(
       path,
       version: _dbVersion,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
+      onCreate: onCreate,
+      onUpgrade: onUpgrade,
     );
 
     return _database!;
   }
 
-  static Future<void> _onCreate(Database db, int version) async {
+  static Future<void> onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE accounts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -136,7 +140,7 @@ class DatabaseHelper {
     }
   }
 
-  static Future<void> _onUpgrade(
+  static Future<void> onUpgrade(
     Database db,
     int oldVersion,
     int newVersion,

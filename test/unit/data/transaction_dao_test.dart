@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:path/path.dart' as p;
 import 'package:pitaka/data/account_dao.dart';
 import 'package:pitaka/data/database_helper.dart';
 import 'package:pitaka/data/transaction_dao.dart';
@@ -11,8 +10,15 @@ void main() {
   setUpAll(() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
-    final path = p.join(await databaseFactory.getDatabasesPath(), 'pitaka.db');
-    await databaseFactory.deleteDatabase(path);
+    final db = await databaseFactory.openDatabase(
+      inMemoryDatabasePath,
+      options: OpenDatabaseOptions(
+        version: 2,
+        onCreate: DatabaseHelper.onCreate,
+        onUpgrade: DatabaseHelper.onUpgrade,
+      ),
+    );
+    DatabaseHelper.setDatabaseForTesting(db);
   });
 
   setUp(() async {
@@ -106,8 +112,29 @@ void main() {
   });
 
   test(
-    'transferFunds throws InsufficientBalanceException when balance is too low',
+    'getTodayTransactions includes late night transactions up to 23:59:59',
     () async {
+      final accountId = await seedAccount();
+      final now = DateTime.now();
+      final lateNight = DateTime(now.year, now.month, now.day, 23, 59, 58);
+
+      await dao.insertTransaction(
+        TransactionModel(
+          accountId: accountId,
+          amount: -45.0,
+          createdAt: lateNight,
+        ),
+      );
+
+      final todays = await dao.getTodayTransactions();
+      expect(todays.any((t) => t.amount == -45.0), isTrue);
+    },
+  );
+
+  test(
+    'transferFunds evaluates live DB balance atomically and throws InsufficientBalanceException when balance is too low',
+    () async {
+      // Seed account with 0 balance
       final fromAccount = await seedAccount();
       final toAccount = await seedAccount();
 
@@ -124,8 +151,9 @@ void main() {
         createdAt: DateTime(2026, 1, 5),
       );
 
+      // Evaluating live DB balance (which is 0) should throw exception
       expect(
-        () => dao.transferFunds(expense, income, currentBalance: 1000.0),
+        () => dao.transferFunds(expense, income),
         throwsA(isA<InsufficientBalanceException>()),
       );
 
@@ -134,28 +162,43 @@ void main() {
     },
   );
 
-  test('transferFunds succeeds when balance is sufficient', () async {
-    final fromAccount = await seedAccount();
-    final toAccount = await seedAccount();
+  test(
+    'transferFunds succeeds atomically using DB balance when sufficient',
+    () async {
+      // Seed fromAccount with starting balance 1000.0
+      final fromAccount = await accountDao.insertAccount(
+        Account(
+          name: 'Solvent Sender',
+          type: 'bank',
+          provider: 'BDO',
+          balance: 1000.0,
+          currency: 'PHP',
+          interestType: 'none',
+          createdAt: DateTime(2026, 1, 1),
+        ),
+      );
+      final toAccount = await seedAccount();
 
-    final expense = TransactionModel(
-      accountId: fromAccount,
-      amount: -500.0,
-      category: 'Transfer',
-      createdAt: DateTime(2026, 1, 5),
-    );
-    final income = TransactionModel(
-      accountId: toAccount,
-      amount: 500.0,
-      category: 'Transfer',
-      createdAt: DateTime(2026, 1, 5),
-    );
+      final expense = TransactionModel(
+        accountId: fromAccount,
+        amount: -500.0,
+        category: 'Transfer',
+        createdAt: DateTime(2026, 1, 5),
+      );
+      final income = TransactionModel(
+        accountId: toAccount,
+        amount: 500.0,
+        category: 'Transfer',
+        createdAt: DateTime(2026, 1, 5),
+      );
 
-    await dao.transferFunds(expense, income, currentBalance: 1000.0);
+      // Call without explicit currentBalance parameter to force internal DB transaction check
+      await dao.transferFunds(expense, income);
 
-    final all = await dao.getAllTransactions();
-    expect(all.length, equals(2));
-  });
+      final all = await dao.getAllTransactions();
+      expect(all.length, equals(2));
+    },
+  );
 
   test('updateTransaction persists changes', () async {
     final accountId = await seedAccount();

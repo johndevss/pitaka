@@ -2,6 +2,7 @@
 
 import 'package:sqflite/sqflite.dart';
 import '../models/transaction_model.dart';
+import 'account_dao.dart';
 import 'database_helper.dart';
 
 class InsufficientBalanceException implements Exception {
@@ -27,16 +28,22 @@ class TransactionDao {
   Future<void> transferFunds(
     TransactionModel expense,
     TransactionModel income, {
-    required double currentBalance,
+    double? currentBalance,
+    AccountDao? accountDao,
   }) async {
     final requestedAmount = expense.amount.abs();
-
-    if (currentBalance < requestedAmount) {
-      throw InsufficientBalanceException(currentBalance, requestedAmount);
-    }
-
     final db = await DatabaseHelper.initDb();
+    final dao = accountDao ?? AccountDao();
+
     await db.transaction((txn) async {
+      // Evaluate actual account balance inside the atomic transaction
+      final liveBalance =
+          currentBalance ?? await dao.getCurrentBalance(expense.accountId, txn);
+
+      if (liveBalance < requestedAmount) {
+        throw InsufficientBalanceException(liveBalance, requestedAmount);
+      }
+
       await txn.insert(
         'transactions',
         expense.toMap(),
@@ -69,18 +76,31 @@ class TransactionDao {
     return result.map((map) => TransactionModel.fromMap(map)).toList();
   }
 
-  // READ — transactions from today only (needed for the Daily Limit feature)
-  Future<List<TransactionModel>> getTodayTransactions() async {
+  // READ — transactions from today (or a specific date) with precise millisecond boundaries
+  Future<List<TransactionModel>> getTodayTransactions([
+    DateTime? targetDate,
+  ]) async {
     final db = await DatabaseHelper.initDb();
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day).toIso8601String();
+    final date = targetDate ?? DateTime.now();
+    final startOfDay = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      0,
+      0,
+      0,
+      0,
+      0,
+    ).toIso8601String();
     final endOfDay = DateTime(
-      now.year,
-      now.month,
-      now.day,
+      date.year,
+      date.month,
+      date.day,
       23,
       59,
       59,
+      999,
+      999,
     ).toIso8601String();
 
     final result = await db.query(
