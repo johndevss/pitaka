@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:pitaka/services/github_update_service.dart';
+import 'package:pitaka/core/services/github_update_service.dart';
 
 class MockDio extends Mock implements Dio {}
 

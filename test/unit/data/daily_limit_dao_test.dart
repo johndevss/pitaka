@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:pitaka/data/daily_limit_dao.dart';
-import 'package:pitaka/data/database_helper.dart';
-import 'package:pitaka/models/daily_limit.dart';
+import 'package:pitaka/features/dashboard/data/daily_limit_dao.dart';
+import 'package:pitaka/core/database/database_helper.dart';
+import 'package:pitaka/features/dashboard/models/daily_limit.dart';
 
 void main() {
   setUpAll(() async {

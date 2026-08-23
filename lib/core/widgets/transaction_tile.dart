@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/transaction_model.dart';
-import '../../utils/currency_formatter.dart';
+import 'package:pitaka/features/transaction/models/transaction_model.dart';
+import 'package:pitaka/core/utils/currency_formatter.dart';
 
 class TransactionTile extends StatelessWidget {
   final TransactionModel transaction;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pitaka/widgets/floating_nav_bar.dart';
+import 'package:pitaka/core/widgets/floating_nav_bar.dart';
 
 void main() {
   testWidgets('FloatingNavBar toggles icon to close when menu is open', (

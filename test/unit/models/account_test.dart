@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pitaka/models/account.dart';
+import 'package:pitaka/features/account/models/account.dart';
 
 void main() {
   test('Account.copyWith preserves unaltered fields', () {

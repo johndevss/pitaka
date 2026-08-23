@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'theme/app_theme.dart';
-import 'screens/shell/home_shell.dart';
+import 'package:pitaka/core/theme/app_theme.dart';
+import 'package:pitaka/features/dashboard/presentation/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

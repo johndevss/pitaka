@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:pitaka/data/account_dao.dart';
-import 'package:pitaka/data/database_helper.dart';
-import 'package:pitaka/data/transaction_dao.dart';
-import 'package:pitaka/models/account.dart';
-import 'package:pitaka/models/transaction_model.dart';
+import 'package:pitaka/features/account/data/account_dao.dart';
+import 'package:pitaka/core/database/database_helper.dart';
+import 'package:pitaka/features/transaction/data/transaction_dao.dart';
+import 'package:pitaka/features/account/models/account.dart';
+import 'package:pitaka/features/transaction/models/transaction_model.dart';
 
 void main() {
   setUpAll(() async {

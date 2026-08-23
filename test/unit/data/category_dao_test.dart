@@ -2,9 +2,9 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:pitaka/data/category_dao.dart';
-import 'package:pitaka/data/database_helper.dart';
-import 'package:pitaka/models/category.dart';
+import 'package:pitaka/features/category/data/category_dao.dart';
+import 'package:pitaka/core/database/database_helper.dart';
+import 'package:pitaka/features/category/models/category.dart';
 
 void main() {
   setUpAll(() async {

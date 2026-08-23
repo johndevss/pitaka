@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pitaka/models/transaction_model.dart';
+import 'package:pitaka/features/transaction/models/transaction_model.dart';
 
 void main() {
   test('TransactionModel converting to and from Map', () {
