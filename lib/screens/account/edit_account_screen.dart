@@ -5,6 +5,7 @@ import '../../providers/account_providers.dart';
 import '../../providers/transaction_providers.dart';
 import '../../utils/currency_formatter.dart';
 import '../../core/widgets/transaction_tile.dart';
+import '../../core/widgets/interest_type_selector.dart';
 
 class AccountDetailsScreen extends ConsumerStatefulWidget {
   final Account account;
@@ -147,33 +148,6 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildInterestTypeChip(String value, String label) {
-    final isSelected = _selectedInterestType == value;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) {
-        setState(() {
-          _selectedInterestType = value;
-        });
-      },
-      selectedColor: Theme.of(
-        context,
-      ).colorScheme.primary.withValues(alpha: 0.15),
-      labelStyle: TextStyle(
-        color: isSelected
-            ? Theme.of(context).colorScheme.primary
-            : Colors.grey.shade700,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      ),
-      side: BorderSide(
-        color: isSelected
-            ? Theme.of(context).colorScheme.primary
-            : Colors.grey.shade300,
-      ),
     );
   }
 
@@ -365,15 +339,10 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                               ),
                         ),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            _buildInterestTypeChip('daily', 'Daily'),
-                            _buildInterestTypeChip('annual', 'Annual'),
-                            _buildInterestTypeChip('quarterly', 'Quarterly'),
-                            _buildInterestTypeChip('other', 'Other'),
-                          ],
+                        InterestTypeSelector(
+                          selectedType: _selectedInterestType,
+                          onChanged: (type) =>
+                              setState(() => _selectedInterestType = type),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
