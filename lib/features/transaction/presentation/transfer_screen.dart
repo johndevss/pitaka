@@ -10,6 +10,7 @@ import 'package:pitaka/features/transaction/controllers/transaction_providers.da
 import 'package:pitaka/features/transaction/models/transaction_model.dart';
 import 'package:pitaka/features/transaction/data/transaction_dao.dart';
 import 'package:pitaka/core/widgets/numeric_keypad.dart';
+import 'package:pitaka/core/widgets/animated_toast.dart';
 
 final logger = Logger(
   printer: PrettyPrinter(
@@ -147,6 +148,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       );
 
       if (!mounted) return;
+      final transferCurrency = _fromAccount?.currency ?? 'PHP';
+      showSuccessToast(
+        context,
+        'Transferred ${formatMoney(_amountValue, transferCurrency)} from $fromDisplayName to $toDisplayName',
+      );
       Navigator.of(context).pop();
     } on InsufficientBalanceException catch (e) {
       logger.w('Transfer blocked: insufficient balance');

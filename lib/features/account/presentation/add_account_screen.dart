@@ -6,6 +6,7 @@ import 'package:pitaka/features/account/models/account.dart';
 import 'package:pitaka/features/account/data/institutions.dart';
 import 'package:pitaka/core/utils/currency_formatter.dart';
 import 'package:pitaka/core/widgets/interest_type_selector.dart';
+import 'package:pitaka/core/widgets/animated_toast.dart';
 
 final logger = Logger(
   printer: PrettyPrinter(
@@ -129,6 +130,10 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
     logger.i("Successfully saved account: ${newAccount.name}");
 
     if (!mounted) return;
+    showSuccessToast(
+      context,
+      'Account "${(newAccount.name != null && newAccount.name!.isNotEmpty) ? newAccount.name : newAccount.provider}" added successfully',
+    );
     Navigator.of(context).pop();
   }
 
