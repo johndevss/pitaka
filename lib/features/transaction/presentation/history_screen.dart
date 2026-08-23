@@ -56,6 +56,9 @@ class HistoryScreen extends ConsumerWidget {
           final summaries = _groupTransactionsByDate(transactions);
 
           return ListView.builder(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
             itemCount: summaries.length,
             itemBuilder: (context, index) {

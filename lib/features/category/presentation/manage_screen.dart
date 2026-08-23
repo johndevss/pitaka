@@ -1,10 +1,10 @@
 // lib/screens/manage/manage_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/category/controllers/category_providers.dart';
 import 'package:pitaka/features/category/presentation/categories_screen.dart';
-
 import 'package:pitaka/core/utils/page_transitions.dart';
 
 class ManageScreen extends ConsumerWidget {
@@ -21,7 +21,10 @@ class ManageScreen extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
           children: [
             // Header
             const Text(
@@ -97,7 +100,6 @@ class ManageScreen extends ConsumerWidget {
                     icon: Icons.download_outlined,
                     title: 'Export',
                     onTap: () {
-                      //TODO: Build Export Screen
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Coming Soon!'),
@@ -113,7 +115,6 @@ class ManageScreen extends ConsumerWidget {
                     icon: Icons.settings_outlined,
                     title: 'Settings',
                     onTap: () {
-                      //TODO: Build settings screen
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Coming Soon!'),
@@ -132,8 +133,8 @@ class ManageScreen extends ConsumerWidget {
   }
 }
 
-// Reusable row widget — the "module" you plug different values into
-class _ManageListItem extends StatelessWidget {
+// Reusable row widget — with tactile haptics and spring press-down animations
+class _ManageListItem extends StatefulWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
@@ -147,36 +148,70 @@ class _ManageListItem extends StatelessWidget {
   });
 
   @override
+  State<_ManageListItem> createState() => _ManageListItemState();
+}
+
+class _ManageListItemState extends State<_ManageListItem> {
+  bool _isPressed = false;
+
+  void _handleTapDown(_) {
+    setState(() => _isPressed = true);
+  }
+
+  void _handleTapUp(_) {
+    setState(() => _isPressed = false);
+  }
+
+  void _handleTapCancel() {
+    setState(() => _isPressed = false);
+  }
+
+  void _handleTap() {
+    HapticFeedback.lightImpact();
+    widget.onTap();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Material(
-      color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onTap: _handleTap,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.98 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            color: _isPressed
+                ? theme.colorScheme.surfaceContainerHigh
+                : theme.colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+          ),
           child: Row(
             children: [
-              Icon(icon, size: 22, color: theme.colorScheme.primary),
+              Icon(widget.icon, size: 22, color: theme.colorScheme.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      widget.title,
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (subtitle != null) ...[
+                    if (widget.subtitle != null) ...[
                       const SizedBox(height: 2),
                       Text(
-                        subtitle!,
+                        widget.subtitle!,
                         style: TextStyle(
                           fontSize: 12,
                           color: theme.colorScheme.onSurfaceVariant,

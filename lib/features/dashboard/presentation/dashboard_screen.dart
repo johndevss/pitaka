@@ -41,6 +41,9 @@ class DashboardScreen extends ConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -147,6 +150,7 @@ class DashboardScreen extends ConsumerWidget {
                   return SizedBox(
                     height: 190,
                     child: ListView.separated(
+                      physics: const BouncingScrollPhysics(),
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemCount: sortedAccounts.length,

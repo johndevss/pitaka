@@ -65,6 +65,9 @@ class AccountsScreen extends ConsumerWidget {
 
           // Build the scrollable list with our new _CategoryHeader
           return ListView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
             children: [
               if (eWallets.isNotEmpty) ...[

@@ -1,6 +1,7 @@
 // lib/core/widgets/numeric_keypad.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class NumericKeypad extends StatelessWidget {
   final void Function(String key) onKeyTap;
@@ -42,33 +43,74 @@ class NumericKeypad extends StatelessWidget {
   }
 }
 
-class _KeypadButton extends StatelessWidget {
+class _KeypadButton extends StatefulWidget {
   final String keyLabel;
   final VoidCallback onTap;
 
   const _KeypadButton({required this.keyLabel, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
-    final isBackspace = keyLabel == 'backspace';
+  State<_KeypadButton> createState() => _KeypadButtonState();
+}
 
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: SizedBox(
+class _KeypadButtonState extends State<_KeypadButton> {
+  bool _isPressed = false;
+
+  void _handleTapDown(_) {
+    setState(() => _isPressed = true);
+  }
+
+  void _handleTapUp(_) {
+    setState(() => _isPressed = false);
+  }
+
+  void _handleTapCancel() {
+    setState(() => _isPressed = false);
+  }
+
+  void _handleTap() {
+    HapticFeedback.lightImpact();
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isBackspace = widget.keyLabel == 'backspace';
+
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onTap: _handleTap,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.93 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
           height: 56,
+          decoration: BoxDecoration(
+            color: _isPressed ? Colors.grey.shade100 : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: _isPressed
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+          ),
           child: Center(
             child: isBackspace
                 ? Icon(
                     Icons.backspace_outlined,
                     size: 20,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                   )
                 : Text(
-                    keyLabel,
+                    widget.keyLabel,
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w600,

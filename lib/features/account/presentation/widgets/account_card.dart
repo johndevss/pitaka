@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/account/controllers/account_providers.dart';
 import 'package:pitaka/core/utils/currency_formatter.dart';
@@ -6,151 +7,180 @@ import 'package:pitaka/features/account/models/account.dart';
 import 'package:pitaka/features/account/presentation/edit_account_screen.dart';
 import 'package:pitaka/core/utils/page_transitions.dart';
 
-class AccountCard extends ConsumerWidget {
+class AccountCard extends ConsumerStatefulWidget {
   final Account account;
 
   const AccountCard({super.key, required this.account});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AccountCard> createState() => _AccountCardState();
+}
+
+class _AccountCardState extends ConsumerState<AccountCard> {
+  bool _isPressed = false;
+
+  void _handleTapDown(_) {
+    setState(() => _isPressed = true);
+  }
+
+  void _handleTapUp(_) {
+    setState(() => _isPressed = false);
+  }
+
+  void _handleTapCancel() {
+    setState(() => _isPressed = false);
+  }
+
+  void _handleTap() {
+    HapticFeedback.lightImpact();
+    Navigator.of(context).push(
+      SmoothSlideRoute(page: AccountDetailsScreen(account: widget.account)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final account = widget.account;
     final balanceAsync = ref.watch(accountBalanceProvider(account.id!));
-    final cardColor = _colorForAccount(
-      account,
-    ); // Evaluates custom brand colors first
+    final cardColor = _colorForAccount(account);
 
     return GestureDetector(
-      onTap: () {
-        Navigator.of(
-          context,
-        ).push(SmoothSlideRoute(page: AccountDetailsScreen(account: account)));
-      },
-      child: Hero(
-        tag: 'account_card_${account.id}',
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: cardColor.withValues(alpha: 0.35),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Icon + Provider Name + More Button
-                Row(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        shape: BoxShape.circle,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: account.iconKey != null
-                          ? Image.asset(
-                              'assets/icons/institutions/${account.iconKey}.png',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Icon(
-                                    _iconForType(account.type),
-                                    size: 18,
-                                    color: Colors.white,
-                                  ),
-                            )
-                          : Icon(
-                              _iconForType(account.type),
-                              size: 18,
-                              color: Colors.white,
-                            ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _displayNameForProvider(account.provider),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onTap: _handleTap,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
+        child: Hero(
+          tag: 'account_card_${account.id}',
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: cardColor.withValues(alpha: _isPressed ? 0.2 : 0.35),
+                    blurRadius: _isPressed ? 6 : 12,
+                    offset: Offset(0, _isPressed ? 2 : 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Icon + Provider Name + More Button
+                  Row(
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          shape: BoxShape.circle,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        clipBehavior: Clip.antiAlias,
+                        child: account.iconKey != null
+                            ? Image.asset(
+                                'assets/icons/institutions/${account.iconKey}.png',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                      _iconForType(account.type),
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
+                              )
+                            : Icon(
+                                _iconForType(account.type),
+                                size: 18,
+                                color: Colors.white,
+                              ),
                       ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _displayNameForProvider(account.provider),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.more_horiz,
+                        size: 18,
+                        color: Colors.white70,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  // ACCOUNT NAME: Custom nickname chosen by the user
+                  if (account.name != null && account.name!.isNotEmpty) ...[
+                    Text(
+                      account.name!,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const Icon(
-                      Icons.more_horiz,
-                      size: 18,
-                      color: Colors.white70,
-                    ),
+                    const SizedBox(height: 2),
                   ],
-                ),
-                const SizedBox(
-                  height: 6,
-                ), // Space between provider row and account name
-                // ACCOUNT NAME: Custom nickname chosen by the user
-                if (account.name != null && account.name!.isNotEmpty) ...[
+
+                  // SUBTITLE: Account type (e.g., Debit · PHP)
                   Text(
-                    account.name!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    _subtitleForAccount(account),
+                    style: const TextStyle(fontSize: 11, color: Colors.white70),
+                  ),
+
+                  const Spacer(),
+
+                  const Text(
+                    'BALANCE',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white70,
+                      letterSpacing: 0.8,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
+                  balanceAsync.when(
+                    data: (balance) => Text(
+                      formatMoney(balance, account.currency),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    loading: () => const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    ),
+                    error: (err, stack) => const Text(
+                      '—',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ),
                 ],
-
-                // SUBTITLE: Account type (e.g., Debit · PHP)
-                Text(
-                  _subtitleForAccount(account),
-                  style: const TextStyle(fontSize: 11, color: Colors.white70),
-                ),
-
-                const Spacer(),
-
-                const Text(
-                  'BALANCE',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white70,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                balanceAsync.when(
-                  data: (balance) => Text(
-                    formatMoney(balance, account.currency),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  loading: () => const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  ),
-                  error: (err, stack) =>
-                      const Text('—', style: TextStyle(color: Colors.white70)),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -265,7 +295,6 @@ class AccountCard extends ConsumerWidget {
       case 'rcbc':
         return 'RCBC';
       default:
-        // Fallback: capitalized string if it's a custom typed name
         if (provider.isEmpty) return 'Custom';
         return provider[0].toUpperCase() + provider.substring(1);
     }
