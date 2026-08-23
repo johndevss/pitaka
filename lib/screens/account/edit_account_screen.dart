@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../models/account.dart';
-import '../../models/transaction_model.dart';
 import '../../providers/account_providers.dart';
 import '../../providers/transaction_providers.dart';
 import '../../utils/currency_formatter.dart';
+import '../../core/widgets/transaction_tile.dart';
 
 class AccountDetailsScreen extends ConsumerStatefulWidget {
   final Account account;
@@ -303,7 +302,11 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                     separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final t = transactions[index];
-                      return _AccountTransactionTile(transaction: t);
+                      return TransactionTile(
+                        transaction: t,
+                        showDate: true,
+                        currency: widget.account.currency,
+                      );
                     },
                   );
                 },
@@ -438,84 +441,6 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
             ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Helper tile widget for rendering individual account transactions
-class _AccountTransactionTile extends StatelessWidget {
-  final TransactionModel transaction;
-
-  const _AccountTransactionTile({required this.transaction});
-
-  @override
-  Widget build(BuildContext context) {
-    final isIncome = transaction.amount > 0;
-    final color = isIncome ? const Color(0xFF2E9F5D) : const Color(0xFFD64545);
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              isIncome
-                  ? Icons.arrow_downward_rounded
-                  : Icons.arrow_upward_rounded,
-              size: 18,
-              color: color,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction.category ?? 'Uncategorized',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF222222),
-                  ),
-                ),
-                Text(
-                  DateFormat('MMM d, y · h:mm a').format(transaction.createdAt),
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                ),
-                if (transaction.note != null &&
-                    transaction.note!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    transaction.note!,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Text(
-            '${isIncome ? '+' : ''}${transaction.amount.toStringAsFixed(2)}',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
       ),
     );
   }

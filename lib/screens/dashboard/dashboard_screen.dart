@@ -10,6 +10,7 @@ import '../../models/transaction_model.dart';
 import '../../utils/currency_formatter.dart';
 import '../account/account_card.dart';
 import 'update_dialog.dart';
+import '../../core/widgets/transaction_tile.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -234,7 +235,7 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           ...dayTransactions.map(
-                            (t) => _TransactionTile(transaction: t),
+                            (t) => TransactionTile(transaction: t),
                           ),
                         ],
                       ),
@@ -384,80 +385,6 @@ class _EquityBadge extends StatelessWidget {
             ),
             error: (err, stack) =>
                 const Text('—', style: TextStyle(color: Colors.white70)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TransactionTile extends StatelessWidget {
-  final TransactionModel transaction;
-
-  const _TransactionTile({required this.transaction});
-
-  @override
-  Widget build(BuildContext context) {
-    final isIncome = transaction.amount > 0;
-    final color = isIncome ? const Color(0xFF2E9F5D) : const Color(0xFFD64545);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              isIncome
-                  ? Icons.arrow_downward_rounded
-                  : Icons.arrow_upward_rounded,
-              size: 18,
-              color: color,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  transaction.category ?? 'Uncategorized',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF222222),
-                  ),
-                ),
-                if (transaction.note != null &&
-                    transaction.note!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    transaction.note!,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Text(
-            '${isIncome ? '+' : ''}${transaction.amount.toStringAsFixed(2)}',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
           ),
         ],
       ),
