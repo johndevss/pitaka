@@ -23,7 +23,9 @@ final logger = Logger(
 );
 
 class TransferScreen extends ConsumerStatefulWidget {
-  const TransferScreen({super.key});
+  final String? heroTag;
+
+  const TransferScreen({super.key, this.heroTag});
 
   @override
   ConsumerState<TransferScreen> createState() => _TransferScreenState();
@@ -191,14 +193,29 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           ),
         ),
         leadingWidth: 90,
-        title: const Text(
-          'Transfer',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF222222),
-          ),
-        ),
+        title: widget.heroTag != null
+            ? Hero(
+                tag: widget.heroTag!,
+                child: Material(
+                  color: Colors.transparent,
+                  child: const Text(
+                    'Transfer',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF222222),
+                    ),
+                  ),
+                ),
+              )
+            : const Text(
+                'Transfer',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF222222),
+                ),
+              ),
         centerTitle: true,
       ),
       body: SafeArea(

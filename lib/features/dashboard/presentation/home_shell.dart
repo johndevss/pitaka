@@ -73,6 +73,7 @@ class _HomeShellState extends State<HomeShell> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _MenuOption(
+                      heroTag: 'hero_income_option',
                       icon: Icons.arrow_upward_rounded,
                       color: const Color(0xFF2E9F5D),
                       label: 'Income',
@@ -80,14 +81,19 @@ class _HomeShellState extends State<HomeShell> {
                         final nav = Navigator.of(dialogContext);
                         nav.pop();
                         nav.push(
-                          SmoothModalRoute(
-                            page: const ExpenseScreen(initialIsExpense: false),
+                          SmoothExpandRoute(
+                            alignment: const Alignment(0.6, 0.65),
+                            page: const ExpenseScreen(
+                              initialIsExpense: false,
+                              heroTag: 'hero_income_option',
+                            ),
                           ),
                         );
                       },
                     ),
                     const Divider(height: 1, color: Color(0xFFF5F7F5)),
                     _MenuOption(
+                      heroTag: 'hero_expense_option',
                       icon: Icons.arrow_downward_rounded,
                       color: const Color(0xFFD64545),
                       label: 'Expense',
@@ -95,14 +101,19 @@ class _HomeShellState extends State<HomeShell> {
                         final nav = Navigator.of(dialogContext);
                         nav.pop();
                         nav.push(
-                          SmoothModalRoute(
-                            page: const ExpenseScreen(initialIsExpense: true),
+                          SmoothExpandRoute(
+                            alignment: const Alignment(0.6, 0.73),
+                            page: const ExpenseScreen(
+                              initialIsExpense: true,
+                              heroTag: 'hero_expense_option',
+                            ),
                           ),
                         );
                       },
                     ),
                     const Divider(height: 1, color: Color(0xFFF5F7F5)),
                     _MenuOption(
+                      heroTag: 'hero_transfer_option',
                       icon: Icons.swap_horiz_rounded,
                       color: const Color(0xFF2D88D4),
                       label: 'Transfer',
@@ -110,7 +121,12 @@ class _HomeShellState extends State<HomeShell> {
                         final nav = Navigator.of(dialogContext);
                         nav.pop();
                         nav.push(
-                          SmoothModalRoute(page: const TransferScreen()),
+                          SmoothExpandRoute(
+                            alignment: const Alignment(0.6, 0.81),
+                            page: const TransferScreen(
+                              heroTag: 'hero_transfer_option',
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -187,12 +203,14 @@ class _HomeShellState extends State<HomeShell> {
 }
 
 class _MenuOption extends StatelessWidget {
+  final String heroTag;
   final IconData icon;
   final Color color;
   final String label;
   final VoidCallback onTap;
 
   const _MenuOption({
+    required this.heroTag,
     required this.icon,
     required this.color,
     required this.label,
@@ -201,23 +219,29 @@ class _MenuOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(width: 14),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF222222),
-              ),
+    return Hero(
+      tag: heroTag,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+            child: Row(
+              children: [
+                Icon(icon, color: color, size: 22),
+                const SizedBox(width: 14),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF222222),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -16,8 +16,9 @@ import 'package:pitaka/core/widgets/animated_toast.dart';
 
 class ExpenseScreen extends ConsumerStatefulWidget {
   final bool initialIsExpense;
+  final String? heroTag;
 
-  const ExpenseScreen({super.key, this.initialIsExpense = true});
+  const ExpenseScreen({super.key, this.initialIsExpense = true, this.heroTag});
 
   @override
   ConsumerState<ExpenseScreen> createState() => _ExpenseScreenState();
@@ -146,14 +147,29 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
           ),
         ),
         leadingWidth: 90,
-        title: Text(
-          _isExpense ? 'New Expense' : 'New Income',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF222222),
-          ),
-        ),
+        title: widget.heroTag != null
+            ? Hero(
+                tag: widget.heroTag!,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Text(
+                    _isExpense ? 'New Expense' : 'New Income',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF222222),
+                    ),
+                  ),
+                ),
+              )
+            : Text(
+                _isExpense ? 'New Expense' : 'New Income',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF222222),
+                ),
+              ),
         centerTitle: true,
       ),
       body: SafeArea(

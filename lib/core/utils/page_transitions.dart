@@ -58,3 +58,36 @@ class SmoothSlideRoute<T> extends PageRouteBuilder<T> {
         },
       );
 }
+
+/// A custom pop-and-expand page route that grows from a specific origin (e.g. bottom-right quick menu button).
+/// When pushed, the new screen pops and scales outward from the tap location.
+/// When popped/dismissed, it collapses back down to the tap location.
+class SmoothExpandRoute<T> extends PageRouteBuilder<T> {
+  final Widget page;
+  final Alignment alignment;
+
+  SmoothExpandRoute({
+    required this.page,
+    this.alignment = const Alignment(0.7, 0.8),
+  }) : super(
+         pageBuilder: (context, animation, secondaryAnimation) => page,
+         transitionDuration: const Duration(milliseconds: 280),
+         reverseTransitionDuration: const Duration(milliseconds: 220),
+         opaque: false,
+         barrierDismissible: true,
+         barrierColor: Colors.black26,
+         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+           final curvedAnim = CurvedAnimation(
+             parent: animation,
+             curve: Curves.easeOutCubic,
+             reverseCurve: Curves.easeInCubic,
+           );
+
+           return ScaleTransition(
+             scale: curvedAnim,
+             alignment: alignment,
+             child: FadeTransition(opacity: curvedAnim, child: child),
+           );
+         },
+       );
+}
