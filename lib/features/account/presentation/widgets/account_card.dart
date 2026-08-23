@@ -123,6 +123,28 @@ class _AccountCardState extends ConsumerState<AccountCard> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (account.interestRate != null &&
+                          account.interestRate! > 0) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.22),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            formatInterestRate(account.interestRate!),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
                       const Icon(
                         Icons.more_horiz,
                         size: 18,
@@ -290,6 +312,14 @@ IconData iconForType(String type) {
     default:
       return Icons.account_balance_wallet_rounded;
   }
+}
+
+String formatInterestRate(double rateDecimal) {
+  final percent = rateDecimal * 100;
+  final formatted = percent
+      .toStringAsFixed(percent % 1 == 0 ? 0 : 2)
+      .replaceAll(RegExp(r'\.?0+$'), '');
+  return '$formatted% p.a.';
 }
 
 String subtitleForAccount(Account account) {
