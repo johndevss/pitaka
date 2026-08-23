@@ -68,9 +68,13 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
 
   List<Institution> _getFilteredInstitutions() {
     if (_tabController.index == 0) {
-      return supportedInstitutions.where((i) => i.type == 'e-wallet').toList();
+      return supportedInstitutions
+          .where((i) => i.type == InstitutionType.eWallet)
+          .toList();
     } else {
-      return supportedInstitutions.where((i) => i.type == 'bank').toList();
+      return supportedInstitutions
+          .where((i) => i.type == InstitutionType.bank)
+          .toList();
     }
   }
 
