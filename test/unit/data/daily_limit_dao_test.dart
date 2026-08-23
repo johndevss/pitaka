@@ -11,9 +11,8 @@ void main() {
     final db = await databaseFactory.openDatabase(
       inMemoryDatabasePath,
       options: OpenDatabaseOptions(
-        version: 2,
+        version: 1,
         onCreate: DatabaseHelper.onCreate,
-        onUpgrade: DatabaseHelper.onUpgrade,
       ),
     );
     DatabaseHelper.setDatabaseForTesting(db);
