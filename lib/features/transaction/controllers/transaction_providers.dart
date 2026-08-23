@@ -1,4 +1,4 @@
-// lib/providers/transaction_providers.dart
+// lib/features/transaction/controllers/transaction_providers.dart
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/transaction/data/transaction_dao.dart';
@@ -65,6 +65,7 @@ class TransactionsController extends AsyncNotifier<List<TransactionModel>> {
 
   void _invalidateRelatedProviders(int accountId) {
     ref.invalidate(todayTransactionsProvider);
+    ref.invalidate(transactionsByAccountProvider(accountId));
     ref.invalidate(accountBalanceProvider(accountId));
     ref.invalidate(totalEquityByCurrencyProvider);
   }
@@ -83,8 +84,6 @@ final allTransactionsProvider = FutureProvider<List<TransactionModel>>((
 
 final transactionsByAccountProvider =
     FutureProvider.family<List<TransactionModel>, int>((ref, accountId) async {
-      ref.watch(allTransactionsProvider);
-
       final dao = ref.watch(transactionDaoProvider);
       return dao.getTransactionsByAccount(accountId);
     });
@@ -92,7 +91,6 @@ final transactionsByAccountProvider =
 final todayTransactionsProvider = FutureProvider<List<TransactionModel>>((
   ref,
 ) async {
-  ref.watch(allTransactionsProvider);
   final dao = ref.watch(transactionDaoProvider);
   return dao.getTodayTransactions();
 });
