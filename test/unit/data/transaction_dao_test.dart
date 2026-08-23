@@ -33,11 +33,10 @@ void main() {
     return accountDao.insertAccount(
       Account(
         name: 'Seed Account',
-        type: 'e-wallet',
-        provider: 'GCash',
-        balance: 0,
+        accountType: 'e-wallet',
+        institutionId: 'gcash',
+        initialBalance: 0,
         currency: 'PHP',
-        interestType: 'none',
         createdAt: DateTime(2026, 1, 1),
       ),
     );
@@ -168,11 +167,10 @@ void main() {
       final fromAccount = await accountDao.insertAccount(
         Account(
           name: 'Solvent Sender',
-          type: 'bank',
-          provider: 'BDO',
-          balance: 1000.0,
+          accountType: 'bank',
+          institutionId: 'bdo',
+          initialBalance: 1000.0,
           currency: 'PHP',
-          interestType: 'none',
           createdAt: DateTime(2026, 1, 1),
         ),
       );

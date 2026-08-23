@@ -41,11 +41,10 @@ void main() {
     await accController.addAccount(
       Account(
         name: 'Main Account',
-        type: 'bank',
-        provider: 'BPI',
-        balance: balance,
+        accountType: 'bank',
+        institutionId: 'bpi',
+        initialBalance: balance,
         currency: 'PHP',
-        interestType: 'none',
         createdAt: DateTime(2026, 1, 1),
       ),
     );
@@ -83,22 +82,20 @@ void main() {
       await accController.addAccount(
         Account(
           name: 'Sender Account',
-          type: 'bank',
-          provider: 'BPI',
-          balance: 1000.0,
+          accountType: 'bank',
+          institutionId: 'bpi',
+          initialBalance: 1000.0,
           currency: 'PHP',
-          interestType: 'none',
           createdAt: DateTime(2026, 1, 1),
         ),
       );
       await accController.addAccount(
         Account(
           name: 'Receiver Account',
-          type: 'e-wallet',
-          provider: 'GCash',
-          balance: 500.0,
+          accountType: 'e-wallet',
+          institutionId: 'gcash',
+          initialBalance: 500.0,
           currency: 'PHP',
-          interestType: 'none',
           createdAt: DateTime(2026, 1, 1),
         ),
       );

@@ -33,11 +33,10 @@ void main() {
   Account buildAccount({String name = 'Test GCash', double balance = 1000.0}) {
     return Account(
       name: name,
-      type: 'e-wallet',
-      provider: 'GCash',
-      balance: balance,
+      accountType: 'e-wallet',
+      institutionId: 'gcash',
+      initialBalance: balance,
       currency: 'PHP',
-      interestType: 'none',
       createdAt: DateTime(2026, 1, 1),
     );
   }
