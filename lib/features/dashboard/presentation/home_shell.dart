@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:pitaka/core/widgets/floating_nav_bar.dart';
+import 'package:pitaka/core/widgets/shared_axis_tab_switcher.dart';
 import 'package:pitaka/features/account/presentation/accounts_screen.dart';
 import 'package:pitaka/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:pitaka/features/transaction/presentation/expense_screen.dart';
@@ -22,20 +24,22 @@ class _HomeShellState extends State<HomeShell> {
   bool _isMenuOpen = false; // Tracks if the floating menu is currently open
   bool _isNavBarVisible = true; // Tracks if the navigation bar is visible
 
-  Widget _screenForTab(NavTab tab) {
-    switch (tab) {
-      case NavTab.home:
-        return const DashboardScreen();
-      case NavTab.wallet:
-        return const AccountsScreen();
-      case NavTab.manage:
-        return const ManageScreen();
-      case NavTab.history:
-        return const HistoryScreen();
+  static const List<Widget> _screens = [
+    DashboardScreen(),
+    AccountsScreen(),
+    ManageScreen(),
+    HistoryScreen(),
+  ];
+
+  void _onTabSelected(NavTab tab) {
+    if (_selectedTab != tab) {
+      HapticFeedback.selectionClick();
+      setState(() => _selectedTab = tab);
     }
   }
 
   void _onAddPressed() async {
+    HapticFeedback.mediumImpact();
     // Turn button state to 'X' and gray
     setState(() => _isMenuOpen = true);
 
@@ -159,11 +163,14 @@ class _HomeShellState extends State<HomeShell> {
           }
           return true;
         },
-        child: _screenForTab(_selectedTab),
+        child: SharedAxisTabSwitcher(
+          selectedIndex: _selectedTab.index,
+          children: _screens,
+        ),
       ),
       bottomNavigationBar: AnimatedSlide(
         duration: const Duration(
-          milliseconds: 600,
+          milliseconds: 300,
         ), // Adjust value to control speed of animation
         curve: Curves.easeOutCubic,
         // Slide down off-screen if false, stay in place if true
@@ -171,7 +178,7 @@ class _HomeShellState extends State<HomeShell> {
         child: FloatingNavBar(
           selectedTab: _selectedTab,
           isMenuOpen: _isMenuOpen,
-          onTabSelected: (tab) => setState(() => _selectedTab = tab),
+          onTabSelected: _onTabSelected,
           onAddPressed: _onAddPressed,
         ),
       ),
