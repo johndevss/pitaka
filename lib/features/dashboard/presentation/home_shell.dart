@@ -7,7 +7,6 @@ import 'package:pitaka/features/category/models/category.dart';
 import 'package:pitaka/core/utils/haptic_engine.dart';
 import 'package:pitaka/core/utils/page_transitions.dart';
 import 'package:pitaka/core/widgets/floating_nav_bar.dart';
-import 'package:pitaka/core/widgets/shared_axis_tab_switcher.dart';
 import 'package:pitaka/features/account/presentation/accounts_screen.dart';
 import 'package:pitaka/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:pitaka/features/transaction/presentation/expense_screen.dart';
@@ -28,9 +27,13 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   final ValueNotifier<bool> _isNavBarVisible = ValueNotifier<bool>(true);
   double _scrollAccumulator = 0;
   bool _isPrewarmed = false;
+  late final PageController _pageController = PageController(
+    initialPage: _selectedTab.index,
+  );
 
   @override
   void dispose() {
+    _pageController.dispose();
     _isNavBarVisible.dispose();
     super.dispose();
   }
@@ -115,6 +118,19 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     if (_selectedTab != tab) {
       HapticEngine.selection();
       setState(() => _selectedTab = tab);
+      _pageController.animateToPage(
+        tab.index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  void _onPageChanged(int index) {
+    final newTab = NavTab.values[index];
+    if (_selectedTab != newTab) {
+      HapticEngine.selection();
+      setState(() => _selectedTab = newTab);
     }
   }
 
@@ -246,8 +262,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       extendBody: true,
       body: NotificationListener<ScrollNotification>(
         onNotification: _handleScrollNotification,
-        child: SharedAxisTabSwitcher(
-          selectedIndex: _selectedTab.index,
+        child: PageView(
+          controller: _pageController,
+          physics: const ClampingScrollPhysics(),
+          onPageChanged: _onPageChanged,
           children: _screens,
         ),
       ),
