@@ -1,4 +1,4 @@
-// lib/widgets/floating_nav_bar.dart
+// lib/core/widgets/floating_nav_bar.dart
 
 import 'package:flutter/material.dart';
 
@@ -15,7 +15,7 @@ class FloatingNavBar extends StatelessWidget {
     required this.selectedTab,
     required this.onTabSelected,
     required this.onAddPressed,
-    this.isMenuOpen = false, // Defaults to false
+    this.isMenuOpen = false,
   });
 
   @override
@@ -24,25 +24,30 @@ class FloatingNavBar extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
           children: [
-            // The pill now wraps EVERYTHING, including the add button
             Expanded(
               child: Container(
                 height: 64,
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(32),
+                  border: Border.all(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+                    width: 1,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withValues(alpha: 0.10),
+                      blurRadius: 20,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _NavItem(
                       icon: Icons.home_rounded,
@@ -56,6 +61,10 @@ class FloatingNavBar extends StatelessWidget {
                       isSelected: selectedTab == NavTab.wallet,
                       onTap: () => onTabSelected(NavTab.wallet),
                     ),
+                    _CenterAddButton(
+                      onPressed: onAddPressed,
+                      isMenuOpen: isMenuOpen,
+                    ),
                     _NavItem(
                       icon: Icons.calendar_today_rounded,
                       label: 'Manage',
@@ -68,17 +77,6 @@ class FloatingNavBar extends StatelessWidget {
                       isSelected: selectedTab == NavTab.history,
                       onTap: () => onTabSelected(NavTab.history),
                     ),
-
-                    Container(
-                      height: 32, // Floating divider line look
-                      width: 1,
-                      color: theme.colorScheme.onSurface.withValues(
-                        alpha: 0.12,
-                      ),
-                    ),
-
-                    // Passed isMenuOpen into _AddButton
-                    _AddButton(onPressed: onAddPressed, isMenuOpen: isMenuOpen),
                   ],
                 ),
               ),
@@ -90,37 +88,65 @@ class FloatingNavBar extends StatelessWidget {
   }
 }
 
-class _AddButton extends StatelessWidget {
+class _CenterAddButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isMenuOpen;
 
-  const _AddButton({required this.onPressed, required this.isMenuOpen});
+  const _CenterAddButton({required this.onPressed, required this.isMenuOpen});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
 
-    return GestureDetector(
-      onTap: onPressed,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          // Color changes to gray when open, or theme primary when closed
-          color: isMenuOpen ? Colors.grey.shade600 : theme.colorScheme.primary,
-          borderRadius: const BorderRadius.only(
-            topRight: Radius.circular(32),
-            bottomRight: Radius.circular(32),
-            topLeft: Radius.circular(12),
-            bottomLeft: Radius.circular(12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: GestureDetector(
+        onTap: onPressed,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isMenuOpen
+                  ? [Colors.grey.shade700, Colors.grey.shade800]
+                  : [
+                      primaryColor,
+                      HSLColor.fromColor(primaryColor)
+                          .withLightness(
+                            (HSLColor.fromColor(primaryColor).lightness - 0.08)
+                                .clamp(0.0, 1.0),
+                          )
+                          .toColor(),
+                    ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isMenuOpen
+                    ? Colors.black26
+                    : primaryColor.withValues(alpha: 0.40),
+                blurRadius: 12,
+                spreadRadius: 0,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ),
-        child: Icon(
-          // Icon flips between 'X' and '+'
-          isMenuOpen ? Icons.close_rounded : Icons.add_rounded,
-          color: theme.colorScheme.onPrimary,
-          size: 28,
+          child: AnimatedRotation(
+            turns: isMenuOpen ? 0.125 : 0.0,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutBack,
+            child: Icon(
+              isMenuOpen ? Icons.close_rounded : Icons.add_rounded,
+              color: Colors.white,
+              size: 26,
+            ),
+          ),
         ),
       ),
     );
@@ -154,12 +180,12 @@ class _NavItem extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
-          margin: const EdgeInsets.all(6),
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
           decoration: BoxDecoration(
             color: isSelected
                 ? theme.colorScheme.primary.withValues(alpha: 0.12)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

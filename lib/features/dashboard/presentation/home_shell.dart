@@ -77,26 +77,31 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
-      barrierColor: Colors.transparent, // 1. No background overlay shadow
+      barrierColor: Colors.transparent, // No background overlay shadow
       transitionDuration: const Duration(
         milliseconds: 150,
-      ), // 2. Faster animation speed (150ms)
+      ), // Faster animation speed (150ms)
       pageBuilder: (dialogContext, animation, secondaryAnimation) {
         return Align(
-          alignment: Alignment.bottomRight,
+          alignment: Alignment.bottomCenter,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 100, right: 20),
+            padding: const EdgeInsets.only(bottom: 92),
             child: Material(
               color: Colors.transparent,
               child: Container(
-                width: 200,
+                width: 210,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                  ), // Clean border instead of shadow
+                  border: Border.all(color: Colors.grey.shade200),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -110,7 +115,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                         Navigator.of(dialogContext).pop();
                         nav.push(
                           SmoothExpandRoute(
-                            alignment: const Alignment(0.6, 0.65),
+                            alignment: const Alignment(0.0, 0.68),
                             page: const ExpenseScreen(initialIsExpense: false),
                           ),
                         );
@@ -126,7 +131,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                         Navigator.of(dialogContext).pop();
                         nav.push(
                           SmoothExpandRoute(
-                            alignment: const Alignment(0.6, 0.73),
+                            alignment: const Alignment(0.0, 0.75),
                             page: const ExpenseScreen(initialIsExpense: true),
                           ),
                         );
@@ -142,7 +147,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                         Navigator.of(dialogContext).pop();
                         nav.push(
                           SmoothExpandRoute(
-                            alignment: const Alignment(0.6, 0.81),
+                            alignment: const Alignment(0.0, 0.82),
                             page: const TransferScreen(),
                           ),
                         );
@@ -161,7 +166,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             parent: anim,
             curve: Curves.easeOutCubic, // Fast and snappy exit/entry
           ),
-          alignment: Alignment.bottomRight,
+          alignment: Alignment.bottomCenter,
           child: FadeTransition(opacity: anim, child: child),
         );
       },
