@@ -73,7 +73,7 @@ class SmoothExpandRoute<T> extends PageRouteBuilder<T> {
          pageBuilder: (context, animation, secondaryAnimation) => page,
          transitionDuration: const Duration(milliseconds: 250),
          reverseTransitionDuration: const Duration(milliseconds: 200),
-         opaque: true,
+         opaque: false,
          barrierDismissible: true,
          barrierColor: Colors.black26,
          transitionsBuilder: (context, animation, secondaryAnimation, child) {
