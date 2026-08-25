@@ -1,54 +1,111 @@
-# Pitaka
+# 🇵🇭 Pitaka (Wallet)
 
-"Pitaka" is the Filipino word for "wallet" — simple as that. It's basically your wallet, but digital, and it actually tells you where your money is going.
+*"Pitaka"* is the Filipino word for **wallet**. It's your digital wallet tracker — simple, fast, completely free, and transparent.
 
-Pitaka is an open source personal finance tracker built specifically for Filipinos who juggle multiple banks, e-wallets, and credit accounts. There isn't really an app out there that focuses on Philippine banks and e-wallets, so I decided to build my own — mainly for personal use, but hopefully it can help others too.
+Pitaka is a 100% open-source, local-first personal finance tracker built specifically for Filipinos juggling multiple Philippine bank accounts, e-wallets, credit cards, and cash.
 
-## Why I built this
+---
 
-Honestly, I was struggling to track my money across GCash, Maya, and my bank accounts. I got tired of using Excel sheets that I kept forgetting to update. So as a fresh grad with some background in Flutter, I decided to try building my own solution.
+## 💭 Why I Built This
 
-This is very much a work in progress and a personal learning project, so expect bugs (and hopefully fixes too as I learn more).
+As a fresh graduate trying to manage my own finances, I was genuinely frustrated with existing budget apps. Almost every finance app on the Play Store or App Store locks essential features — like adding more than 2 accounts, creating custom categories, tracking transfers, or exporting data — behind aggressive paywalls and monthly subscriptions.
 
-## Privacy First
+I got tired of updating messy Excel sheets that I kept forgetting to sync, and I didn't want to pay a monthly subscription just to track my own hard-earned money. 
 
-No cloud, no accounts, no tracking. All data is stored locally on your device using SQLite. There is no backend server — the app talks directly to a local database file. Nobody has access to your data but you.
+So, I decided to build **Pitaka**: a finance app that is **100% free, open-source, and paywall-free forever**. No ads, no monthly sub, no locked features, and no corporate tracking.
 
-## Features
+---
 
-* **Dashboard** — See all your assets in one screen *(planned)*
-* **Accounts** — Manually add your accounts and track your net worth
-* **Transactions** — View all your transactions in one place *(planned)*
-* **Daily Limit** — Set a daily spending limit to help you stay on track with your financial goals *(planned)*
-* **Daily Interest** — Automatically adds daily interest based on your bank, so you don't have to calculate it manually *(planned)*
+## ✨ Features
+
+- **Tailored for PH Institutions**: Pre-configured profiles for Philippine banks and e-wallets (SeaBank, Maya, GoTyme, GCash, BDO, BPI, CIMB, Tonik, Maribank, DiskarTech, etc.).
+- **Automated Daily Interest Engine**: Automatically calculates daily high-yield savings interest (including the 20% PH withholding tax deduction and tiered caps) and auto-posts payouts directly to your accounts.
+- **Paywall-Free & Open Source**: Every single feature is unlocked for everyone. No premium tiers, no subscriptions.
+- **Privacy First & Local-Only**: Your financial data never leaves your phone. All data is stored locally in an embedded SQLite database. No cloud servers, no mandatory account sign-up, and zero tracking.
+- **Accounts & Net Worth Tracking**: Track Wallet, Savings, Credit, and Cash accounts with live balance calculation.
+- **Atomic Inter-Account Transfers**: Easily move funds between accounts (e.g. BDO to Maya) with real-time balance validation.
+- **Expense & Income Categorization**: Organize transactions with custom icons, color accents, and dedicated Expense/Income tabs.
+- **Daily Spending Limits**: Set daily budget limits to help keep your daily spending on track.
+- **In-App Release Updates**: Built-in GitHub release updater allowing you to check for and install new app updates directly within Pitaka.
+
+---
+
+## Privacy & Local-First Philosophy
+
+- **No Cloud Database**: No backend server exists.
+- **No Accounts Required**: Open the app and start using it immediately.
+- **Your Data is Yours**: Stored in a local `pitaka.db` file on your device. Backup and control your own data anytime.
+
+---
 
 ## Tech Stack
 
-* **Flutter** — cross-platform UI (Android and iOS)
-* **SQLite** (via `sqflite`) — local, embedded database. No server, no API — all data lives in a single local database file.
-* **Riverpod** (`flutter_riverpod`) — state management, bridges the local database to the UI
-* **intl** — currency and date formatting
+- **[Flutter](https://flutter.dev/)** — Cross-platform mobile UI framework.
+- **[SQLite](https://pub.dev/packages/sqflite)** (`sqflite`) — Local embedded database running in WAL (Write-Ahead Logging) mode.
+- **[Riverpod](https://riverpod.dev/)** (`flutter_riverpod`) — Reactive state management bridging local database state to UI.
+- **[Intl](https://pub.dev/packages/intl)** — Locale-aware currency formatting supporting PHP (₱), USD ($), and custom ISO currencies.
 
-## Architecture
+---
 
-Pitaka is local-first with no backend:
+## 📚 Architecture & Documentation
 
-```
-UI (Screens) → Riverpod Providers → DAOs → SQLite
-```
+Pitaka is built using **Feature-First Clean Architecture**.
 
-Full details in [Project Documentation](docs/README.md).
+Detailed documentation regarding codebase structure, database schemas, interest calculation math, and testing can be found in the **[`docs/`](docs/README.md)** directory:
+
+- **[Architecture Overview](docs/architecture.md)**
+- **[File Structure Reference](docs/file-structure.md)**
+- **[Database Schema & Triggers](docs/database-schema.md)**
+- **[Design Decisions & Interest Engine](docs/design-decisions.md)**
+- **[Testing Guide](docs/testing.md)**
+- **[Status & Roadmap](docs/status-and-roadmap.md)**
+
+---
 
 ## Getting Started
 
-**Prerequisites:**
-* [Flutter SDK](https://docs.flutter.dev/get-started/install) installed
-* An Android/iOS emulator, or a physical device with USB debugging enabled
+### Prerequisites
 
-**Setup:**
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (v3.0.0 or higher)
+- Android Studio / VS Code with Flutter extension
+- An Android/iOS emulator or physical device
+
+### Running Locally
+
 ```bash
-git clone https://github.com/<your-username>/pitaka.git
+# 1. Clone the repository
+git clone https://github.com/johndevss/pitaka.git
+
+# 2. Navigate to project root
 cd pitaka
+
+# 3. Install dependencies
 flutter pub get
+
+# 4. Run the app
 flutter run
 ```
+
+### Running Tests
+
+```bash
+flutter test
+```
+
+---
+
+## Contributing
+
+Contributions, feedback, bug reports, and feature suggestions are very welcome! If you're a student, fresh grad, or developer wanting to build something cool for the PH dev community:
+
+1. Fork the repo.
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'feat: Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE.md) — free to use, modify, and distribute.
