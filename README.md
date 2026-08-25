@@ -1,4 +1,4 @@
-# 🇵🇭 Pitaka (Wallet)
+# Pitaka (Wallet)
 
 *"Pitaka"* is the Filipino word for **wallet**. It's your digital wallet tracker — simple, fast, completely free, and transparent.
 
@@ -6,7 +6,7 @@ Pitaka is a 100% open-source, local-first personal finance tracker built specifi
 
 ---
 
-## 💭 Why I Built This
+## Why I Built This
 
 As a fresh graduate trying to manage my own finances, I was genuinely frustrated with existing budget apps. Almost every finance app on the Play Store or App Store locks essential features — like adding more than 2 accounts, creating custom categories, tracking transfers, or exporting data — behind aggressive paywalls and monthly subscriptions.
 
@@ -16,7 +16,7 @@ So, I decided to build **Pitaka**: a finance app that is **100% free, open-sourc
 
 ---
 
-## ✨ Features
+## Features
 
 - **Tailored for PH Institutions**: Pre-configured profiles for Philippine banks and e-wallets (SeaBank, Maya, GoTyme, GCash, BDO, BPI, CIMB, Tonik, Maribank, DiskarTech, etc.).
 - **Automated Daily Interest Engine**: Automatically calculates daily high-yield savings interest (including the 20% PH withholding tax deduction and tiered caps) and auto-posts payouts directly to your accounts.
