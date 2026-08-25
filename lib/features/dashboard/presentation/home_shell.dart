@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/account/controllers/account_providers.dart';
 import 'package:pitaka/features/account/models/institution.dart';
 import 'package:pitaka/features/category/controllers/category_providers.dart';
 import 'package:pitaka/features/category/models/category.dart';
+import 'package:pitaka/core/utils/haptic_engine.dart';
 import 'package:pitaka/core/utils/page_transitions.dart';
 import 'package:pitaka/core/widgets/floating_nav_bar.dart';
 import 'package:pitaka/core/widgets/shared_axis_tab_switcher.dart';
@@ -113,13 +113,22 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   void _onTabSelected(NavTab tab) {
     if (_selectedTab != tab) {
-      HapticFeedback.selectionClick();
+      HapticEngine.selection();
       setState(() => _selectedTab = tab);
     }
   }
 
+  void _onAddLongPressed() {
+    Navigator.of(context).push(
+      SmoothExpandRoute(
+        alignment: const Alignment(0.0, 0.75),
+        page: const ExpenseScreen(initialIsExpense: true),
+      ),
+    );
+  }
+
   void _onAddPressed() {
-    HapticFeedback.mediumImpact();
+    HapticEngine.medium();
     // Turn button state to 'X' and gray
     setState(() => _isMenuOpen = true);
 
@@ -257,6 +266,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           isMenuOpen: _isMenuOpen,
           onTabSelected: _onTabSelected,
           onAddPressed: _onAddPressed,
+          onAddLongPressed: _onAddLongPressed,
         ),
       ),
     );

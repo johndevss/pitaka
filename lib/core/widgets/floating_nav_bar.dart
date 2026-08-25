@@ -1,6 +1,7 @@
 // lib/core/widgets/floating_nav_bar.dart
 
 import 'package:flutter/material.dart';
+import 'package:pitaka/core/utils/haptic_engine.dart';
 
 enum NavTab { home, wallet, manage, history }
 
@@ -8,6 +9,7 @@ class FloatingNavBar extends StatelessWidget {
   final NavTab selectedTab;
   final ValueChanged<NavTab> onTabSelected;
   final VoidCallback onAddPressed;
+  final VoidCallback? onAddLongPressed;
   final bool isMenuOpen;
 
   const FloatingNavBar({
@@ -15,6 +17,7 @@ class FloatingNavBar extends StatelessWidget {
     required this.selectedTab,
     required this.onTabSelected,
     required this.onAddPressed,
+    this.onAddLongPressed,
     this.isMenuOpen = false,
   });
 
@@ -63,6 +66,7 @@ class FloatingNavBar extends StatelessWidget {
                     ),
                     _CenterAddButton(
                       onPressed: onAddPressed,
+                      onLongPressed: onAddLongPressed,
                       isMenuOpen: isMenuOpen,
                     ),
                     _NavItem(
@@ -90,9 +94,14 @@ class FloatingNavBar extends StatelessWidget {
 
 class _CenterAddButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final VoidCallback? onLongPressed;
   final bool isMenuOpen;
 
-  const _CenterAddButton({required this.onPressed, required this.isMenuOpen});
+  const _CenterAddButton({
+    required this.onPressed,
+    this.onLongPressed,
+    required this.isMenuOpen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +112,12 @@ class _CenterAddButton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: GestureDetector(
         onTap: onPressed,
+        onLongPress: onLongPressed != null
+            ? () {
+                HapticEngine.heavy();
+                onLongPressed!();
+              }
+            : null,
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
