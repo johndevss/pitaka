@@ -37,7 +37,7 @@ Pitaka is local-first with no backend:
 UI (Screens) → Riverpod Providers → DAOs → SQLite
 ```
 
-Full details in [DOCUMENTATION.md](./DOCUMENTATION.md).
+Full details in [Project Documentation](docs/README.md).
 
 ## Getting Started
 
