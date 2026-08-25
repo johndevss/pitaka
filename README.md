@@ -47,7 +47,7 @@ So, I decided to build **Pitaka**: a finance app that is **100% free, open-sourc
 
 ---
 
-## 📚 Architecture & Documentation
+## Architecture & Documentation
 
 Pitaka is built using **Feature-First Clean Architecture**.
 
@@ -106,6 +106,6 @@ Contributions, feedback, bug reports, and feature suggestions are very welcome! 
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE.md) — free to use, modify, and distribute.
