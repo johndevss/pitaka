@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pitaka/models/daily_limit.dart';
+import 'package:pitaka/features/dashboard/models/daily_limit.dart';
 
 void main() {
   test('DailyLimit converting to and from Map', () {

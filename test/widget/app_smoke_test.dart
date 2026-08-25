@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pitaka/main.dart';
-import 'package:pitaka/widgets/floating_nav_bar.dart';
+import 'package:pitaka/core/widgets/floating_nav_bar.dart';
 
 void main() {
   testWidgets('Pitaka App smoke test - layout renders successfully', (

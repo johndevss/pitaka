@@ -1,18 +1,24 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:path/path.dart' as p;
-import 'package:pitaka/data/account_dao.dart';
-import 'package:pitaka/data/database_helper.dart';
-import 'package:pitaka/data/transaction_dao.dart';
-import 'package:pitaka/models/account.dart';
-import 'package:pitaka/models/transaction_model.dart';
+import 'package:pitaka/features/account/data/account_dao.dart';
+import 'package:pitaka/core/database/database_helper.dart';
+import 'package:pitaka/features/transaction/data/transaction_dao.dart';
+import 'package:pitaka/features/account/models/account.dart';
+import 'package:pitaka/features/account/models/account_interest_config.dart';
+import 'package:pitaka/features/transaction/models/transaction_model.dart';
 
 void main() {
   setUpAll(() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
-    final path = p.join(await databaseFactory.getDatabasesPath(), 'pitaka.db');
-    await databaseFactory.deleteDatabase(path);
+    final db = await databaseFactory.openDatabase(
+      inMemoryDatabasePath,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: DatabaseHelper.onCreate,
+      ),
+    );
+    DatabaseHelper.setDatabaseForTesting(db);
   });
 
   setUp(() async {
@@ -27,11 +33,10 @@ void main() {
   Account buildAccount({String name = 'Test GCash', double balance = 1000.0}) {
     return Account(
       name: name,
-      type: 'e-wallet',
-      provider: 'GCash',
-      balance: balance,
+      accountType: 'e-wallet',
+      institutionId: 'gcash',
+      initialBalance: balance,
       currency: 'PHP',
-      interestType: 'none',
       createdAt: DateTime(2026, 1, 1),
     );
   }
@@ -118,4 +123,60 @@ void main() {
       expect(balance, equals(0.0));
     });
   });
+
+  group('getTotalEquityByCurrency', () {
+    test(
+      'groups total balances by currency accurately in single query',
+      () async {
+        final id1 = await dao.insertAccount(
+          buildAccount(balance: 1000.0).copyWith(currency: 'PHP'),
+        );
+        await dao.insertAccount(
+          buildAccount(balance: 50.0).copyWith(currency: 'USD'),
+        );
+
+        await txDao.insertTransaction(
+          TransactionModel(
+            accountId: id1,
+            amount: 500.0,
+            category: 'Income',
+            createdAt: DateTime(2026, 1, 2),
+          ),
+        );
+
+        final totals = await dao.getTotalEquityByCurrency();
+
+        expect(totals['PHP'], equals(1500.0));
+        expect(totals['USD'], equals(50.0));
+      },
+    );
+  });
+
+  test(
+    'insertAccountWithConfig saves account and interest config atomically',
+    () async {
+      final account = Account(
+        name: 'SeaBank Savings',
+        institutionId: 'seabank',
+        accountType: 'bank',
+        initialBalance: 5000.0,
+        currency: 'PHP',
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      final config = AccountInterestConfig(
+        accountId: 0, // Assigned inside transaction
+        interestRate: 0.045,
+        calcMode: 'daily_accrue',
+      );
+
+      final id = await dao.insertAccountWithConfig(account, config);
+
+      final fetched = await dao.getAccountById(id);
+      expect(fetched, isNotNull);
+      expect(fetched!.name, equals('SeaBank Savings'));
+      expect(fetched.interestRate, equals(0.045));
+      expect(fetched.calcMode, equals('daily_accrue'));
+    },
+  );
 }

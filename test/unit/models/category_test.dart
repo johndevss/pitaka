@@ -1,7 +1,7 @@
 // test/unit/models/category_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pitaka/models/category.dart';
+import 'package:pitaka/features/category/models/category.dart';
 
 void main() {
   test('Category.copyWith preserves unaltered fields', () {

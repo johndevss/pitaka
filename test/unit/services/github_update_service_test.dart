@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:pitaka/services/github_update_service.dart';
+import 'package:pitaka/core/services/github_update_service.dart';
 
 class MockDio extends Mock implements Dio {}
 
@@ -34,8 +34,28 @@ void main() {
       expect(service.isNewer('0.1.1', '0.1.2'), isTrue);
     });
 
+    test('treats 0.10.0 as newer than 0.9.0 (multi-digit jump)', () {
+      expect(service.isNewer('0.9.0', '0.10.0'), isTrue);
+    });
+
+    test('treats 1.10.0 as newer than 1.9.5', () {
+      expect(service.isNewer('1.9.5', '1.10.0'), isTrue);
+    });
+
+    test('treats higher build number as newer when versions are identical', () {
+      expect(service.isNewer('0.1.5+5', '0.1.5+6'), isTrue);
+    });
+
+    test('treats leading v prefix correctly', () {
+      expect(service.isNewer('0.1.1', 'v0.1.2'), isTrue);
+    });
+
     test('treats identical versions as not newer', () {
       expect(service.isNewer('0.1.2', '0.1.2'), isFalse);
+    });
+
+    test('treats identical version and build number as not newer', () {
+      expect(service.isNewer('0.1.5+5', '0.1.5+5'), isFalse);
     });
 
     test('treats an older version as not newer', () {

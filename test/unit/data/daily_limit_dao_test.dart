@@ -1,16 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:path/path.dart' as p;
-import 'package:pitaka/data/daily_limit_dao.dart';
-import 'package:pitaka/data/database_helper.dart';
-import 'package:pitaka/models/daily_limit.dart';
+import 'package:pitaka/features/dashboard/data/daily_limit_dao.dart';
+import 'package:pitaka/core/database/database_helper.dart';
+import 'package:pitaka/features/dashboard/models/daily_limit.dart';
 
 void main() {
   setUpAll(() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
-    final path = p.join(await databaseFactory.getDatabasesPath(), 'pitaka.db');
-    await databaseFactory.deleteDatabase(path);
+    final db = await databaseFactory.openDatabase(
+      inMemoryDatabasePath,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: DatabaseHelper.onCreate,
+      ),
+    );
+    DatabaseHelper.setDatabaseForTesting(db);
   });
 
   setUp(() async {
