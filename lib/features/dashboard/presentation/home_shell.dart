@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/account/controllers/account_providers.dart';
@@ -26,8 +25,15 @@ class HomeShell extends ConsumerStatefulWidget {
 class _HomeShellState extends ConsumerState<HomeShell> {
   NavTab _selectedTab = NavTab.home;
   bool _isMenuOpen = false; // Tracks if the floating menu is currently open
-  bool _isNavBarVisible = true; // Tracks if the navigation bar is visible
+  final ValueNotifier<bool> _isNavBarVisible = ValueNotifier<bool>(true);
+  double _scrollAccumulator = 0;
   bool _isPrewarmed = false;
+
+  @override
+  void dispose() {
+    _isNavBarVisible.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -36,6 +42,50 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       _isPrewarmed = true;
       _prewarmAssetsAndState();
     }
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    // Ignore horizontal scrolls (e.g. the accounts card carousel)
+    if (notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+
+    final metrics = notification.metrics;
+
+    // Always keep visible when near the top of the screen (e.g. top 20px)
+    if (metrics.pixels <= 20) {
+      if (!_isNavBarVisible.value) {
+        _isNavBarVisible.value = true;
+      }
+      _scrollAccumulator = 0;
+      return true;
+    }
+
+    if (notification is ScrollUpdateNotification) {
+      final delta = notification.scrollDelta ?? 0;
+
+      if (delta > 0) {
+        // Scrolling down (finger dragging up / content moving up)
+        if (_scrollAccumulator < 0) _scrollAccumulator = 0;
+        _scrollAccumulator += delta;
+
+        if (_scrollAccumulator >= 12 && _isNavBarVisible.value) {
+          _isNavBarVisible.value = false;
+          _scrollAccumulator = 0;
+        }
+      } else if (delta < 0) {
+        // Scrolling up (finger dragging down / content moving down)
+        if (_scrollAccumulator > 0) _scrollAccumulator = 0;
+        _scrollAccumulator += delta; // delta is negative
+
+        if (_scrollAccumulator <= -8 && !_isNavBarVisible.value) {
+          _isNavBarVisible.value = true;
+          _scrollAccumulator = 0;
+        }
+      }
+    }
+
+    return true;
   }
 
   void _prewarmAssetsAndState() {
@@ -185,38 +235,23 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
     return Scaffold(
       extendBody: true,
-      body: NotificationListener<UserScrollNotification>(
-        onNotification: (notification) {
-          // Ignore horizontal scrolls (e.g. the accounts card carousel)
-          if (notification.metrics.axis != Axis.vertical) {
-            return false;
-          }
-          // Check the scroll direction
-          if (notification.direction == ScrollDirection.reverse) {
-            // User is scrolling down, hide the nav bar
-            if (_isNavBarVisible) {
-              setState(() => _isNavBarVisible = false);
-            }
-          } else if (notification.direction == ScrollDirection.forward) {
-            // User is scrolling up, show the nav bar
-            if (!_isNavBarVisible) {
-              setState(() => _isNavBarVisible = true);
-            }
-          }
-          return true;
-        },
+      body: NotificationListener<ScrollNotification>(
+        onNotification: _handleScrollNotification,
         child: SharedAxisTabSwitcher(
           selectedIndex: _selectedTab.index,
           children: _screens,
         ),
       ),
-      bottomNavigationBar: AnimatedSlide(
-        duration: const Duration(
-          milliseconds: 300,
-        ), // Adjust value to control speed of animation
-        curve: Curves.easeOutCubic,
-        // Slide down off-screen if false, stay in place if true
-        offset: _isNavBarVisible ? Offset.zero : const Offset(0, 2),
+      bottomNavigationBar: ValueListenableBuilder<bool>(
+        valueListenable: _isNavBarVisible,
+        builder: (context, isVisible, child) {
+          return AnimatedSlide(
+            duration: Duration(milliseconds: isVisible ? 280 : 200),
+            curve: isVisible ? Curves.easeOutCubic : Curves.easeInCubic,
+            offset: isVisible ? Offset.zero : const Offset(0, 2),
+            child: child!,
+          );
+        },
         child: FloatingNavBar(
           selectedTab: _selectedTab,
           isMenuOpen: _isMenuOpen,
