@@ -156,8 +156,8 @@ void main() {
     'insertAccountWithConfig saves account and interest config atomically',
     () async {
       final account = Account(
-        name: 'SeaBank Savings',
-        institutionId: 'seabank',
+        name: 'MariBank Savings',
+        institutionId: 'maribank',
         accountType: 'bank',
         initialBalance: 5000.0,
         currency: 'PHP',
@@ -174,7 +174,7 @@ void main() {
 
       final fetched = await dao.getAccountById(id);
       expect(fetched, isNotNull);
-      expect(fetched!.name, equals('SeaBank Savings'));
+      expect(fetched!.name, equals('MariBank Savings'));
       expect(fetched.interestRate, equals(0.045));
       expect(fetched.calcMode, equals('daily_accrue'));
     },

@@ -6,7 +6,7 @@ import 'package:pitaka/features/account/models/institution.dart';
 
 class DatabaseHelper {
   static const _dbName = 'pitaka.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
 
   static Database? _database;
 
@@ -30,9 +30,79 @@ class DatabaseHelper {
         await db.rawQuery('PRAGMA temp_store = MEMORY');
       },
       onCreate: onCreate,
+      onUpgrade: onUpgrade,
     );
 
     return _database!;
+  }
+
+  static Future<void> onUpgrade(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    if (oldVersion == 1 && newVersion >= 2) {
+      final institutionColumns = await db.rawQuery(
+        'PRAGMA table_info(institutions)',
+      );
+      final hasLegacyType = institutionColumns.any(
+        (column) => column['name'] == 'institution_type',
+      );
+
+      if (hasLegacyType) {
+        await db.execute('ALTER TABLE institutions RENAME TO institutions_old');
+        await db.execute('''
+          CREATE TABLE institutions (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL,
+            icon_key TEXT NOT NULL,
+            default_currency TEXT NOT NULL DEFAULT 'PHP',
+            has_interest INTEGER NOT NULL DEFAULT 0
+          )
+        ''');
+        await db.execute('''
+          INSERT INTO institutions (id, name, type, icon_key, default_currency, has_interest)
+          SELECT id, name, institution_type, icon_key, default_currency, has_interest
+          FROM institutions_old
+        ''');
+        await db.execute('DROP TABLE institutions_old');
+      }
+
+      await db.transaction((txn) async {
+        final maribank = InstitutionRegistry.getById('maribank');
+        if (maribank != null) {
+          await txn.insert(
+            'institutions',
+            maribank.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+
+        await txn.update(
+          'accounts',
+          {'institution_id': 'maribank'},
+          where: 'LOWER(institution_id) = ?',
+          whereArgs: ['seabank'],
+        );
+        await txn.rawUpdate(
+          'UPDATE accounts SET provider = ? '
+          'WHERE LOWER(provider) IN (?, ?, ?)',
+          ['MariBank', 'seabank', 'sea bank', 'sea-bank'],
+        );
+        await txn.update(
+          'accounts',
+          {'icon_key': 'maribank'},
+          where: 'LOWER(icon_key) = ?',
+          whereArgs: ['seabank'],
+        );
+        await txn.delete(
+          'institutions',
+          where: 'LOWER(id) = ?',
+          whereArgs: ['seabank'],
+        );
+      });
+    }
   }
 
   static Future<void> onCreate(Database db, int version) async {

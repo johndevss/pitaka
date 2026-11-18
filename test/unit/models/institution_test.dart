@@ -8,13 +8,15 @@ void main() {
     test(
       'InstitutionRegistry.getById returns correct institution case-insensitively',
       () {
-        final seabank = InstitutionRegistry.getById('seabank');
-        expect(seabank, isNotNull);
-        expect(seabank!.name, equals('SeaBank'));
-        expect(seabank.hasInterest, isTrue);
-        expect(seabank.defaultInterest, isNotNull);
-        expect(seabank.defaultInterest!.defaultRate, equals(0.045));
-        expect(seabank.defaultInterest!.calcMode, equals('daily_payout'));
+        final maribank = InstitutionRegistry.getById('maribank');
+        expect(maribank, isNotNull);
+        expect(maribank!.name, equals('MariBank'));
+        expect(maribank.hasInterest, isTrue);
+        expect(maribank.defaultInterest, isNotNull);
+        expect(maribank.defaultInterest!.defaultRate, equals(0.045));
+        expect(maribank.defaultInterest!.calcMode, equals('daily_payout'));
+
+        expect(InstitutionRegistry.getById('seabank'), isNull);
 
         final gotyme = InstitutionRegistry.getById('GOTYME');
         expect(gotyme, isNotNull);
@@ -33,7 +35,8 @@ void main() {
     test('InstitutionRegistry filters banks and eWallets correctly', () {
       final banks = InstitutionRegistry.banks;
       expect(banks.every((b) => b.type == InstitutionType.bank), isTrue);
-      expect(banks.any((b) => b.id == 'seabank'), isTrue);
+      expect(banks.any((b) => b.id == 'maribank'), isTrue);
+      expect(banks.any((b) => b.id == 'seabank'), isFalse);
 
       final eWallets = InstitutionRegistry.eWallets;
       expect(eWallets.every((e) => e.type == InstitutionType.eWallet), isTrue);

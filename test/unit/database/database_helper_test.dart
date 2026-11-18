@@ -52,7 +52,8 @@ void main() {
     test('seeds default institutions on database creation', () async {
       final institutions = await db.query('institutions');
       expect(institutions, isNotEmpty);
-      expect(institutions.any((i) => i['id'] == 'seabank'), isTrue);
+      expect(institutions.any((i) => i['id'] == 'maribank'), isTrue);
+      expect(institutions.any((i) => i['id'] == 'seabank'), isFalse);
       expect(institutions.any((i) => i['id'] == 'gotyme'), isTrue);
       expect(institutions.any((i) => i['id'] == 'gcash'), isTrue);
     });
@@ -86,7 +87,7 @@ void main() {
         // 1. Create account
         final accountId = await db.insert('accounts', {
           'name': 'Test Savings',
-          'institution_id': 'seabank',
+          'institution_id': 'maribank',
           'account_type': 'bank',
           'initial_balance': 1000.0,
           'currency': 'PHP',
@@ -122,6 +123,50 @@ void main() {
 
       final categoryRes = await db.query('v_monthly_category_analytics');
       expect(categoryRes, isNotNull);
+    });
+  });
+
+  group('DatabaseHelper Migration Tests', () {
+    test('v1 migration rebrands SeaBank accounts as MariBank', () async {
+      await db.insert('institutions', {
+        'id': 'seabank',
+        'name': 'SeaBank',
+        'type': 'bank',
+        'icon_key': 'seabank',
+        'default_currency': 'PHP',
+        'has_interest': 1,
+      });
+
+      final accountId = await db.insert('accounts', {
+        'name': 'My Savings',
+        'institution_id': 'seabank',
+        'provider': 'SeaBank',
+        'account_type': 'bank',
+        'initial_balance': 5000.0,
+        'currency': 'PHP',
+        'icon_key': 'seabank',
+      });
+
+      await DatabaseHelper.onUpgrade(db, 1, 2);
+
+      final account = await db.query(
+        'accounts',
+        where: 'id = ?',
+        whereArgs: [accountId],
+      );
+
+      expect(account, hasLength(1));
+      expect(account.first['institution_id'], 'maribank');
+      expect(account.first['provider'], 'MariBank');
+      expect(account.first['icon_key'], 'maribank');
+      expect(account.first['initial_balance'], 5000.0);
+
+      final legacyInstitution = await db.query(
+        'institutions',
+        where: 'id = ?',
+        whereArgs: ['seabank'],
+      );
+      expect(legacyInstitution, isEmpty);
     });
   });
 }
