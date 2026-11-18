@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/account/controllers/account_providers.dart';
 import 'package:pitaka/features/account/models/institution.dart';
 import 'package:pitaka/features/category/controllers/category_providers.dart';
 import 'package:pitaka/features/category/models/category.dart';
+import 'package:pitaka/core/utils/haptic_engine.dart';
 import 'package:pitaka/core/utils/page_transitions.dart';
 import 'package:pitaka/core/widgets/floating_nav_bar.dart';
-import 'package:pitaka/core/widgets/shared_axis_tab_switcher.dart';
 import 'package:pitaka/features/account/presentation/accounts_screen.dart';
 import 'package:pitaka/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:pitaka/features/transaction/presentation/expense_screen.dart';
@@ -26,8 +24,19 @@ class HomeShell extends ConsumerStatefulWidget {
 class _HomeShellState extends ConsumerState<HomeShell> {
   NavTab _selectedTab = NavTab.home;
   bool _isMenuOpen = false; // Tracks if the floating menu is currently open
-  bool _isNavBarVisible = true; // Tracks if the navigation bar is visible
+  final ValueNotifier<bool> _isNavBarVisible = ValueNotifier<bool>(true);
+  double _scrollAccumulator = 0;
   bool _isPrewarmed = false;
+  late final PageController _pageController = PageController(
+    initialPage: _selectedTab.index,
+  );
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _isNavBarVisible.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -36,6 +45,50 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       _isPrewarmed = true;
       _prewarmAssetsAndState();
     }
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    // Ignore horizontal scrolls (e.g. the accounts card carousel)
+    if (notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+
+    final metrics = notification.metrics;
+
+    // Always keep visible when near the top of the screen (e.g. top 20px)
+    if (metrics.pixels <= 20) {
+      if (!_isNavBarVisible.value) {
+        _isNavBarVisible.value = true;
+      }
+      _scrollAccumulator = 0;
+      return true;
+    }
+
+    if (notification is ScrollUpdateNotification) {
+      final delta = notification.scrollDelta ?? 0;
+
+      if (delta > 0) {
+        // Scrolling down (finger dragging up / content moving up)
+        if (_scrollAccumulator < 0) _scrollAccumulator = 0;
+        _scrollAccumulator += delta;
+
+        if (_scrollAccumulator >= 12 && _isNavBarVisible.value) {
+          _isNavBarVisible.value = false;
+          _scrollAccumulator = 0;
+        }
+      } else if (delta < 0) {
+        // Scrolling up (finger dragging down / content moving down)
+        if (_scrollAccumulator > 0) _scrollAccumulator = 0;
+        _scrollAccumulator += delta; // delta is negative
+
+        if (_scrollAccumulator <= -8 && !_isNavBarVisible.value) {
+          _isNavBarVisible.value = true;
+          _scrollAccumulator = 0;
+        }
+      }
+    }
+
+    return true;
   }
 
   void _prewarmAssetsAndState() {
@@ -63,13 +116,35 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   void _onTabSelected(NavTab tab) {
     if (_selectedTab != tab) {
-      HapticFeedback.selectionClick();
+      HapticEngine.selection();
       setState(() => _selectedTab = tab);
+      _pageController.animateToPage(
+        tab.index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      );
     }
   }
 
+  void _onPageChanged(int index) {
+    final newTab = NavTab.values[index];
+    if (_selectedTab != newTab) {
+      HapticEngine.selection();
+      setState(() => _selectedTab = newTab);
+    }
+  }
+
+  void _onAddLongPressed() {
+    Navigator.of(context).push(
+      SmoothExpandRoute(
+        alignment: const Alignment(0.0, 0.75),
+        page: const ExpenseScreen(initialIsExpense: true),
+      ),
+    );
+  }
+
   void _onAddPressed() {
-    HapticFeedback.mediumImpact();
+    HapticEngine.medium();
     // Turn button state to 'X' and gray
     setState(() => _isMenuOpen = true);
 
@@ -77,26 +152,31 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Dismiss',
-      barrierColor: Colors.transparent, // 1. No background overlay shadow
+      barrierColor: Colors.transparent, // No background overlay shadow
       transitionDuration: const Duration(
         milliseconds: 150,
-      ), // 2. Faster animation speed (150ms)
+      ), // Faster animation speed (150ms)
       pageBuilder: (dialogContext, animation, secondaryAnimation) {
         return Align(
-          alignment: Alignment.bottomRight,
+          alignment: Alignment.bottomCenter,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 100, right: 20),
+            padding: const EdgeInsets.only(bottom: 92),
             child: Material(
               color: Colors.transparent,
               child: Container(
-                width: 200,
+                width: 210,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                  ), // Clean border instead of shadow
+                  border: Border.all(color: Colors.grey.shade200),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -110,7 +190,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                         Navigator.of(dialogContext).pop();
                         nav.push(
                           SmoothExpandRoute(
-                            alignment: const Alignment(0.6, 0.65),
+                            alignment: const Alignment(0.0, 0.68),
                             page: const ExpenseScreen(initialIsExpense: false),
                           ),
                         );
@@ -126,7 +206,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                         Navigator.of(dialogContext).pop();
                         nav.push(
                           SmoothExpandRoute(
-                            alignment: const Alignment(0.6, 0.73),
+                            alignment: const Alignment(0.0, 0.75),
                             page: const ExpenseScreen(initialIsExpense: true),
                           ),
                         );
@@ -142,7 +222,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                         Navigator.of(dialogContext).pop();
                         nav.push(
                           SmoothExpandRoute(
-                            alignment: const Alignment(0.6, 0.81),
+                            alignment: const Alignment(0.0, 0.82),
                             page: const TransferScreen(),
                           ),
                         );
@@ -161,7 +241,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             parent: anim,
             curve: Curves.easeOutCubic, // Fast and snappy exit/entry
           ),
-          alignment: Alignment.bottomRight,
+          alignment: Alignment.bottomCenter,
           child: FadeTransition(opacity: anim, child: child),
         );
       },
@@ -180,43 +260,31 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
     return Scaffold(
       extendBody: true,
-      body: NotificationListener<UserScrollNotification>(
-        onNotification: (notification) {
-          // Ignore horizontal scrolls (e.g. the accounts card carousel)
-          if (notification.metrics.axis != Axis.vertical) {
-            return false;
-          }
-          // Check the scroll direction
-          if (notification.direction == ScrollDirection.reverse) {
-            // User is scrolling down, hide the nav bar
-            if (_isNavBarVisible) {
-              setState(() => _isNavBarVisible = false);
-            }
-          } else if (notification.direction == ScrollDirection.forward) {
-            // User is scrolling up, show the nav bar
-            if (!_isNavBarVisible) {
-              setState(() => _isNavBarVisible = true);
-            }
-          }
-          return true;
-        },
-        child: SharedAxisTabSwitcher(
-          selectedIndex: _selectedTab.index,
+      body: NotificationListener<ScrollNotification>(
+        onNotification: _handleScrollNotification,
+        child: PageView(
+          controller: _pageController,
+          physics: const ClampingScrollPhysics(),
+          onPageChanged: _onPageChanged,
           children: _screens,
         ),
       ),
-      bottomNavigationBar: AnimatedSlide(
-        duration: const Duration(
-          milliseconds: 300,
-        ), // Adjust value to control speed of animation
-        curve: Curves.easeOutCubic,
-        // Slide down off-screen if false, stay in place if true
-        offset: _isNavBarVisible ? Offset.zero : const Offset(0, 2),
+      bottomNavigationBar: ValueListenableBuilder<bool>(
+        valueListenable: _isNavBarVisible,
+        builder: (context, isVisible, child) {
+          return AnimatedSlide(
+            duration: Duration(milliseconds: isVisible ? 280 : 200),
+            curve: isVisible ? Curves.easeOutCubic : Curves.easeInCubic,
+            offset: isVisible ? Offset.zero : const Offset(0, 2),
+            child: child!,
+          );
+        },
         child: FloatingNavBar(
           selectedTab: _selectedTab,
           isMenuOpen: _isMenuOpen,
           onTabSelected: _onTabSelected,
           onAddPressed: _onAddPressed,
+          onAddLongPressed: _onAddLongPressed,
         ),
       ),
     );

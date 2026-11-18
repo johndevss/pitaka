@@ -27,6 +27,7 @@ dependencies:
   package_info_plus: ^10.2.1
   dio: ^5.11.0
   open_filex: ^4.7.0
+  flutter_markdown_plus: ^1.0.12
 
 dev_dependencies:
   flutter_test:

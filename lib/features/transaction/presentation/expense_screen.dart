@@ -13,6 +13,7 @@ import 'package:pitaka/core/utils/currency_formatter.dart';
 import 'package:pitaka/core/utils/category_icons.dart';
 import 'package:pitaka/core/widgets/numeric_keypad.dart';
 import 'package:pitaka/core/widgets/animated_toast.dart';
+import 'package:pitaka/core/widgets/pull_to_dismiss_wrapper.dart';
 
 class ExpenseScreen extends ConsumerStatefulWidget {
   final bool initialIsExpense;
@@ -134,328 +135,335 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
     );
     final currency = _selectedAccount?.currency ?? 'PHP';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F5),
-      appBar: AppBar(
+    return PullToDismissWrapper(
+      child: Scaffold(
         backgroundColor: const Color(0xFFF5F7F5),
-        elevation: 0,
-        leading: TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
-          ),
-        ),
-        leadingWidth: 90,
-        title: Text(
-          _isExpense ? 'New Expense' : 'New Income',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF222222),
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Amount display
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    currencySymbol(currency),
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    _amountInput,
-                    style: const TextStyle(
-                      fontSize: 52,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF222222),
-                    ),
-                  ),
-                ],
-              ),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFF5F7F5),
+          elevation: 0,
+          leading: TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
             ),
-
-            // Note field
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          leadingWidth: 90,
+          title: Text(
+            _isExpense ? 'New Expense' : 'New Income',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF222222),
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Amount display
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        'NOTE',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.grey.shade500,
-                          letterSpacing: 0.6,
-                        ),
+                    Text(
+                      currencySymbol(currency),
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade500,
                       ),
                     ),
-                    TextField(
-                      controller: _noteController,
-                      decoration: InputDecoration(
-                        hintText: 'e.g. Lunch, Grab ride, groceries',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.only(bottom: 10),
+                    const SizedBox(width: 6),
+                    Text(
+                      _amountInput,
+                      style: const TextStyle(
+                        fontSize: 52,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF222222),
                       ),
-                      style: const TextStyle(fontSize: 15),
                     ),
                   ],
                 ),
               ),
-            ),
 
-            const SizedBox(height: 18),
-
-            // Category chips
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'CATEGORY (OPTIONAL)',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey.shade500,
-                    letterSpacing: 0.6,
+              // Note field
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 40,
-              child: categoriesAsync.when(
-                data: (categories) {
-                  if (categories.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          'No ${_isExpense ? 'expense' : 'income'} categories yet — add some in Manage > Categories',
+                          'NOTE',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
                             color: Colors.grey.shade500,
+                            letterSpacing: 0.6,
                           ),
                         ),
                       ),
-                    );
-                  }
-                  return ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: categories.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final cat = categories[index];
-                      final color = colorFromHex(cat.colorHex);
-                      final isSelected = _selectedCategory == cat.name;
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedCategory = isSelected ? null : cat.name;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? color.withValues(alpha: 0.15)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isSelected ? color : Colors.grey.shade200,
-                            ),
+                      TextField(
+                        controller: _noteController,
+                        decoration: InputDecoration(
+                          hintText: 'e.g. Lunch, Grab ride, groceries',
+                          hintStyle: TextStyle(
+                            color: Colors.grey.shade400,
+                            fontSize: 14,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                iconForKey(cat.iconKey),
-                                size: 16,
-                                color: color,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                cat.name,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.w500,
-                                  color: const Color(0xFF222222),
-                                ),
-                              ),
-                            ],
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.only(bottom: 10),
+                        ),
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              // Category chips
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'CATEGORY (OPTIONAL)',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey.shade500,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 40,
+                child: categoriesAsync.when(
+                  data: (categories) {
+                    if (categories.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'No ${_isExpense ? 'expense' : 'income'} categories yet — add some in Manage > Categories',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
                           ),
                         ),
                       );
-                    },
-                  );
-                },
-                loading: () => const Center(
-                  child: SizedBox(
-                    height: 16,
-                    width: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
-                error: (err, stack) => const SizedBox.shrink(),
-              ),
-            ),
-
-            const Spacer(),
-
-            // Numeric keypad
-            NumericKeypad(onKeyTap: _onKeyTap),
-
-            // Account selector + Save button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: accountsAsync.when(
-                      data: (accounts) {
-                        if (_selectedAccount == null && accounts.isNotEmpty) {
-                          _selectedAccount = accounts.first;
-                        }
-                        final selectedValue =
-                            accounts.contains(_selectedAccount)
-                            ? _selectedAccount
-                            : (accounts.isNotEmpty ? accounts.first : null);
-
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<Account>(
-                              isExpanded: true,
-                              value: selectedValue,
-                              hint: const Text(
-                                'Select Account',
-                                style: TextStyle(fontSize: 14),
+                    }
+                    return ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: categories.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final cat = categories[index];
+                        final color = colorFromHex(cat.colorHex);
+                        final isSelected = _selectedCategory == cat.name;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCategory = isSelected ? null : cat.name;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? color.withValues(alpha: 0.15)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected
+                                    ? color
+                                    : Colors.grey.shade200,
                               ),
-                              icon: const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                              ),
-                              items: accounts.map((acc) {
-                                return DropdownMenuItem(
-                                  value: acc,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(4),
-                                        child: Image.asset(
-                                          'assets/icons/institutions/${acc.iconKey}.png',
-                                          width: 24,
-                                          height: 24,
-                                          cacheWidth: 48,
-                                          cacheHeight: 48,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                                return Icon(
-                                                  Icons.account_balance_wallet,
-                                                  size: 18,
-                                                  color: Colors.grey.shade400,
-                                                );
-                                              },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: Text(
-                                          acc.name?.isNotEmpty == true
-                                              ? acc.name!
-                                              : acc.providerName,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  iconForKey(cat.iconKey),
+                                  size: 16,
+                                  color: color,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  cat.name,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                    color: const Color(0xFF222222),
                                   ),
-                                );
-                              }).toList(),
-                              onChanged: (acc) =>
-                                  setState(() => _selectedAccount = acc),
+                                ),
+                              ],
                             ),
                           ),
                         );
                       },
-                      loading: () => const SizedBox(
-                        height: 48,
-                        child: Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      error: (err, stack) => const SizedBox.shrink(),
+                    );
+                  },
+                  loading: () => const Center(
+                    child: SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 3,
-                    child: FilledButton(
-                      onPressed: _save,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF1F8A5B),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: Text(
-                        _isExpense ? 'Save Expense' : 'Save Income',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  error: (err, stack) => const SizedBox.shrink(),
+                ),
               ),
-            ),
-          ],
+
+              const Spacer(),
+
+              // Numeric keypad
+              NumericKeypad(onKeyTap: _onKeyTap),
+
+              // Account selector + Save button
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: accountsAsync.when(
+                        data: (accounts) {
+                          if (_selectedAccount == null && accounts.isNotEmpty) {
+                            _selectedAccount = accounts.first;
+                          }
+                          final selectedValue =
+                              accounts.contains(_selectedAccount)
+                              ? _selectedAccount
+                              : (accounts.isNotEmpty ? accounts.first : null);
+
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<Account>(
+                                isExpanded: true,
+                                value: selectedValue,
+                                hint: const Text(
+                                  'Select Account',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                ),
+                                items: accounts.map((acc) {
+                                  return DropdownMenuItem(
+                                    value: acc,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                          child: Image.asset(
+                                            'assets/icons/institutions/${acc.iconKey}.png',
+                                            width: 24,
+                                            height: 24,
+                                            cacheWidth: 48,
+                                            cacheHeight: 48,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                                  return Icon(
+                                                    Icons
+                                                        .account_balance_wallet,
+                                                    size: 18,
+                                                    color: Colors.grey.shade400,
+                                                  );
+                                                },
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          child: Text(
+                                            acc.name?.isNotEmpty == true
+                                                ? acc.name!
+                                                : acc.providerName,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (acc) =>
+                                    setState(() => _selectedAccount = acc),
+                              ),
+                            ),
+                          );
+                        },
+                        loading: () => const SizedBox(
+                          height: 48,
+                          child: Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        error: (err, stack) => const SizedBox.shrink(),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 3,
+                      child: FilledButton(
+                        onPressed: _save,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F8A5B),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          _isExpense ? 'Save Expense' : 'Save Income',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

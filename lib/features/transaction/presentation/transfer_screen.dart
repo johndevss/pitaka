@@ -11,6 +11,7 @@ import 'package:pitaka/features/transaction/models/transaction_model.dart';
 import 'package:pitaka/features/transaction/data/transaction_dao.dart';
 import 'package:pitaka/core/widgets/numeric_keypad.dart';
 import 'package:pitaka/core/widgets/animated_toast.dart';
+import 'package:pitaka/core/widgets/pull_to_dismiss_wrapper.dart';
 
 final logger = Logger(
   printer: PrettyPrinter(
@@ -180,169 +181,174 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     final accountsAsync = ref.watch(accountsProvider);
     final currency = _fromAccount?.currency ?? 'PHP';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F5),
-      appBar: AppBar(
+    return PullToDismissWrapper(
+      child: Scaffold(
         backgroundColor: const Color(0xFFF5F7F5),
-        elevation: 0,
-        leading: TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
-          ),
-        ),
-        leadingWidth: 90,
-        title: const Text(
-          'Transfer',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF222222),
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    currencySymbol(currency),
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    _amountInput,
-                    style: const TextStyle(
-                      fontSize: 52,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF222222),
-                    ),
-                  ),
-                ],
-              ),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFF5F7F5),
+          elevation: 0,
+          leading: TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
             ),
-
-            // From / To Account Selectors
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildAccountDropdown(
-                      label: 'FROM',
-                      value: _fromAccount,
-                      accountsAsync: accountsAsync.whenData(
-                        (accounts) => accounts
-                            .where((a) => a.id != _toAccount?.id)
-                            .toList(),
-                      ),
-                      onChanged: (acc) => setState(() => _fromAccount = acc),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Icon(Icons.arrow_forward_rounded, color: Colors.grey),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildAccountDropdown(
-                      label: 'TO',
-                      value: _toAccount,
-                      accountsAsync: accountsAsync.whenData(
-                        (accounts) => accounts
-                            .where((a) => a.id != _fromAccount?.id)
-                            .toList(),
-                      ),
-                      onChanged: (acc) => setState(() => _toAccount = acc),
-                    ),
-                  ),
-                ],
-              ),
+          ),
+          leadingWidth: 90,
+          title: const Text(
+            'Transfer',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF222222),
             ),
-
-            const SizedBox(height: 18),
-
-            // Note field
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        'NOTE (OPTIONAL)',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.grey.shade500,
-                          letterSpacing: 0.6,
-                        ),
+                    Text(
+                      currencySymbol(currency),
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade500,
                       ),
                     ),
-                    TextField(
-                      controller: _noteController,
-                      decoration: InputDecoration(
-                        hintText: 'e.g. Savings deposit',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 14,
-                        ),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.only(bottom: 10),
+                    const SizedBox(width: 6),
+                    Text(
+                      _amountInput,
+                      style: const TextStyle(
+                        fontSize: 52,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF222222),
                       ),
-                      style: const TextStyle(fontSize: 15),
                     ),
                   ],
                 ),
               ),
-            ),
 
-            const Spacer(),
-
-            // Reusing custom Keypad widget
-            NumericKeypad(onKeyTap: _onKeyTap),
-
-            // Save button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _saveTransfer,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF2D88D4),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+              // From / To Account Selectors
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildAccountDropdown(
+                        label: 'FROM',
+                        value: _fromAccount,
+                        accountsAsync: accountsAsync.whenData(
+                          (accounts) => accounts
+                              .where((a) => a.id != _toAccount?.id)
+                              .toList(),
+                        ),
+                        onChanged: (acc) => setState(() => _fromAccount = acc),
+                      ),
                     ),
+                    const SizedBox(width: 12),
+                    const Icon(Icons.arrow_forward_rounded, color: Colors.grey),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildAccountDropdown(
+                        label: 'TO',
+                        value: _toAccount,
+                        accountsAsync: accountsAsync.whenData(
+                          (accounts) => accounts
+                              .where((a) => a.id != _fromAccount?.id)
+                              .toList(),
+                        ),
+                        onChanged: (acc) => setState(() => _toAccount = acc),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              // Note field
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
                   ),
-                  child: const Text(
-                    'Confirm Transfer',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'NOTE (OPTIONAL)',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade500,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ),
+                      TextField(
+                        controller: _noteController,
+                        decoration: InputDecoration(
+                          hintText: 'e.g. Savings deposit',
+                          hintStyle: TextStyle(
+                            color: Colors.grey.shade400,
+                            fontSize: 14,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.only(bottom: 10),
+                        ),
+                        style: const TextStyle(fontSize: 15),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          ],
+
+              const Spacer(),
+
+              // Reusing custom Keypad widget
+              NumericKeypad(onKeyTap: _onKeyTap),
+
+              // Save button
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _saveTransfer,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D88D4),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      'Confirm Transfer',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -34,7 +34,7 @@ void main() {
 
   group('InterestEngine Calculations', () {
     test(
-      'calculateDailyInterest computes 20% WHT correctly for SeaBank (4.5%)',
+      'calculateDailyInterest computes 20% WHT correctly for MariBank (4.5%)',
       () {
         // ₱100,000 balance at 4.5% annual rate
         // Gross daily = 100,000 * 0.045 / 365 = 12.328767
@@ -78,7 +78,7 @@ void main() {
     test('calculateMissedDays generates correct number of daily entries', () {
       final account = Account(
         id: 1,
-        name: 'Test SeaBank',
+        name: 'Test MariBank',
         currency: 'PHP',
         createdAt: DateTime(2026, 1, 1),
       );
@@ -110,11 +110,11 @@ void main() {
         final txDao = TransactionDao();
         final worker = InterestPostingWorker();
 
-        // Create SeaBank account with 4.5% interest starting 5 days ago
+        // Create MariBank account with 4.5% interest starting 5 days ago
         final createdDate = DateTime(2026, 8, 18);
         final account = Account(
-          name: 'My SeaBank',
-          institutionId: 'seabank',
+          name: 'My MariBank',
+          institutionId: 'maribank',
           accountType: 'bank',
           initialBalance: 100000.0,
           currency: 'PHP',

@@ -91,20 +91,9 @@ class InstitutionRegistry {
     ),
     'maribank': Institution(
       id: 'maribank',
-      name: 'Maribank',
+      name: 'MariBank',
       type: InstitutionType.bank,
       iconKey: 'maribank',
-      hasInterest: true,
-      defaultInterest: DefaultInterestPreset(
-        defaultRate: 0.045,
-        calcMode: 'daily_payout',
-      ),
-    ),
-    'seabank': Institution(
-      id: 'seabank',
-      name: 'SeaBank',
-      type: InstitutionType.bank,
-      iconKey: 'seabank',
       hasInterest: true,
       defaultInterest: DefaultInterestPreset(
         defaultRate: 0.045,
@@ -187,7 +176,7 @@ class InstitutionRegistry {
     'bpi-banko': Institution(
       id: 'bpi-banko',
       name: 'BPI BanKo',
-      type: InstitutionType.eWallet,
+      type: InstitutionType.bank,
       iconKey: 'bpi-banko',
     ),
   };

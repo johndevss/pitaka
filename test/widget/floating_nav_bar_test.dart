@@ -39,4 +39,31 @@ void main() {
     expect(find.byIcon(Icons.close_rounded), findsOneWidget);
     expect(find.byIcon(Icons.add_rounded), findsNothing);
   });
+
+  testWidgets(
+    'FloatingNavBar triggers onAddLongPressed when center button is long pressed',
+    (WidgetTester tester) async {
+      bool longPressed = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            bottomNavigationBar: FloatingNavBar(
+              selectedTab: NavTab.home,
+              onTabSelected: (_) {},
+              onAddPressed: () {},
+              onAddLongPressed: () {
+                longPressed = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      await tester.longPress(find.byIcon(Icons.add_rounded));
+      await tester.pumpAndSettle();
+
+      expect(longPressed, isTrue);
+    },
+  );
 }

@@ -57,7 +57,9 @@ class AccountsScreen extends ConsumerWidget {
           }
 
           // Filter the accounts by type
-          final eWallets = accounts.where((a) => a.type == 'e-wallet').toList();
+          final eWallets = accounts
+              .where((a) => a.type == 'e-wallet' || a.type == 'cash')
+              .toList();
           final banks = accounts.where((a) => a.type == 'bank').toList();
           final creditCards = accounts
               .where((a) => a.type == 'credit')
@@ -71,7 +73,7 @@ class AccountsScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
             children: [
               if (eWallets.isNotEmpty) ...[
-                _CategoryHeader(title: 'E-Wallets', accounts: eWallets),
+                _CategoryHeader(title: 'Wallets', accounts: eWallets),
                 const SizedBox(height: 12),
                 _buildAccountGrid(eWallets),
                 const SizedBox(height: 24),
