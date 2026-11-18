@@ -176,7 +176,7 @@ class InstitutionRegistry {
     'bpi-banko': Institution(
       id: 'bpi-banko',
       name: 'BPI BanKo',
-      type: InstitutionType.eWallet,
+      type: InstitutionType.bank,
       iconKey: 'bpi-banko',
     ),
   };
