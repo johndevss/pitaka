@@ -70,7 +70,11 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
   List<Institution> _getFilteredInstitutions() {
     if (_tabController.index == 0) {
       return supportedInstitutions
-          .where((i) => i.type == InstitutionType.eWallet)
+          .where(
+            (i) =>
+                i.type == InstitutionType.eWallet ||
+                i.type == InstitutionType.cash,
+          )
           .toList();
     } else {
       return supportedInstitutions
@@ -79,16 +83,18 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
     }
   }
 
-  String _getAccountTypeFromIndex(int index) {
-    switch (index) {
-      case 0:
-        return 'e-wallet';
-      case 1:
+  String _getAccountTypeFromInstitution(Institution institution) {
+    switch (institution.type) {
+      case InstitutionType.cash:
+        return 'cash';
+      case InstitutionType.bank:
         return 'bank';
-      case 2:
-        return 'credit';
-      default:
+      case InstitutionType.eWallet:
         return 'e-wallet';
+      case InstitutionType.creditCard:
+        return 'credit';
+      case InstitutionType.investment:
+        return 'investment';
     }
   }
 
@@ -109,7 +115,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen>
       return;
     }
 
-    final accountType = _getAccountTypeFromIndex(_tabController.index);
+    final accountType = _getAccountTypeFromInstitution(_selectedInstitution!);
 
     final newAccount = Account(
       name: _nameController.text.trim(),
