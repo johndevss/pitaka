@@ -6,7 +6,7 @@ import 'package:pitaka/features/account/models/institution.dart';
 
 class DatabaseHelper {
   static const _dbName = 'pitaka.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
 
   static Database? _database;
 
@@ -103,6 +103,36 @@ class DatabaseHelper {
         );
       });
     }
+
+    if (oldVersion < 3) {
+      final transactionColumns = await db.rawQuery(
+        'PRAGMA table_info(transactions)',
+      );
+      final hasTransferGroup = transactionColumns.any(
+        (column) => column['name'] == 'transfer_group_id',
+      );
+      if (!hasTransferGroup) {
+        await db.execute(
+          'ALTER TABLE transactions ADD COLUMN transfer_group_id TEXT',
+        );
+        await db.execute(
+          'CREATE INDEX idx_tx_transfer_group ON transactions(transfer_group_id)',
+        );
+      }
+
+      await db.transaction((txn) async {
+        await txn.rawUpdate(
+          "UPDATE transactions SET type = 'transfer' "
+          "WHERE type = 'expense' AND category = 'Transfer Out' "
+          "AND destination_account_id IS NOT NULL",
+        );
+        await txn.rawUpdate(
+          "UPDATE transactions SET type = 'transfer' "
+          "WHERE type = 'income' AND category = 'Transfer In' "
+          "AND destination_account_id IS NOT NULL",
+        );
+      });
+    }
   }
 
   static Future<void> onCreate(Database db, int version) async {
@@ -186,6 +216,7 @@ class DatabaseHelper {
         gross_amount REAL,
         tax_amount REAL,
         note TEXT,
+        transfer_group_id TEXT,
         transaction_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE,
@@ -254,6 +285,9 @@ class DatabaseHelper {
     );
     await db.execute(
       'CREATE INDEX idx_tx_account_date ON transactions (account_id, transaction_date)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_tx_transfer_group ON transactions (transfer_group_id)',
     );
     await db.execute(
       'CREATE INDEX idx_snapshots_date ON daily_account_snapshots (snapshot_date)',

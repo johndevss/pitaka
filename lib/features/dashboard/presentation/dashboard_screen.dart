@@ -11,6 +11,7 @@ import 'package:pitaka/core/utils/currency_formatter.dart';
 import 'package:pitaka/features/account/presentation/widgets/account_card.dart';
 import 'package:pitaka/features/dashboard/presentation/widgets/update_dialog.dart';
 import 'package:pitaka/core/widgets/transaction_tile.dart';
+import 'package:pitaka/features/transaction/presentation/expense_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -242,7 +243,19 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           ...dayTransactions.map(
-                            (t) => TransactionTile(transaction: t),
+                            (t) => TransactionTile(
+                              transaction: t,
+                              onTap: t.type == 'transfer'
+                                  ? null
+                                  : () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute<void>(
+                                          builder: (_) =>
+                                              ExpenseScreen(transaction: t),
+                                        ),
+                                      );
+                                    },
+                            ),
                           ),
                         ],
                       ),

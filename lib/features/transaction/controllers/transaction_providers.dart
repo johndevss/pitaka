@@ -41,14 +41,25 @@ class TransactionsController extends AsyncNotifier<List<TransactionModel>> {
     });
   }
 
-  Future<void> updateTransaction(TransactionModel transaction) async {
+  Future<void> updateTransaction(
+    TransactionModel transaction, {
+    int? previousAccountId,
+  }) async {
     state = AsyncLoading<List<TransactionModel>>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final dao = ref.read(transactionDaoProvider);
       await dao.updateTransaction(transaction);
       _invalidateRelatedProviders(transaction.accountId);
+      if (previousAccountId != null &&
+          previousAccountId != transaction.accountId) {
+        _invalidateRelatedProviders(previousAccountId);
+      }
+      ref.invalidate(accountsProvider);
       return dao.getAllTransactions();
     });
+
+    final error = state.asError;
+    if (error != null) throw error.error;
   }
 
   Future<void> deleteTransaction(int transactionId, {int? accountId}) async {
@@ -59,8 +70,12 @@ class TransactionsController extends AsyncNotifier<List<TransactionModel>> {
       if (accountId != null) {
         _invalidateRelatedProviders(accountId);
       }
+      ref.invalidate(accountsProvider);
       return dao.getAllTransactions();
     });
+
+    final error = state.asError;
+    if (error != null) throw error.error;
   }
 
   void _invalidateRelatedProviders(int accountId) {

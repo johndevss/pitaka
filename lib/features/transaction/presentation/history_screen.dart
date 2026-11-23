@@ -5,6 +5,7 @@ import 'package:pitaka/features/transaction/models/transaction_model.dart';
 import 'package:pitaka/features/transaction/controllers/transaction_providers.dart';
 import 'package:pitaka/core/utils/currency_formatter.dart';
 import 'package:pitaka/core/widgets/transaction_tile.dart';
+import 'package:pitaka/features/transaction/presentation/expense_screen.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -268,6 +269,15 @@ class _DailyTransactionGroup extends StatelessWidget {
                   transaction: t,
                   showTime: true,
                   showDivider: !isLast,
+                  onTap: t.type == 'transfer'
+                      ? null
+                      : () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => ExpenseScreen(transaction: t),
+                            ),
+                          );
+                        },
                 );
               }).toList(),
             ),
