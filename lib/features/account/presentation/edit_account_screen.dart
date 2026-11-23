@@ -5,6 +5,7 @@ import 'package:pitaka/features/account/models/account_interest_config.dart';
 import 'package:pitaka/features/account/data/institutions.dart';
 import 'package:pitaka/features/account/controllers/account_providers.dart';
 import 'package:pitaka/features/transaction/controllers/transaction_providers.dart';
+import 'package:pitaka/features/transaction/presentation/expense_screen.dart';
 import 'package:pitaka/core/utils/currency_formatter.dart';
 import 'package:pitaka/core/widgets/transaction_tile.dart';
 import 'package:pitaka/core/widgets/interest_type_selector.dart';
@@ -377,6 +378,16 @@ class _AccountDetailsScreenState extends ConsumerState<AccountDetailsScreen> {
                         transaction: t,
                         showDate: true,
                         currency: widget.account.currency,
+                        onTap: t.type == 'transfer'
+                            ? null
+                            : () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) =>
+                                        ExpenseScreen(transaction: t),
+                                  ),
+                                );
+                              },
                       );
                     },
                   );

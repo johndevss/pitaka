@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pitaka/features/account/controllers/account_providers.dart';
 import 'package:pitaka/features/transaction/controllers/transaction_providers.dart';
+import 'package:pitaka/features/transaction/data/transaction_dao.dart';
 import 'package:pitaka/features/category/controllers/category_providers.dart';
 import 'package:pitaka/features/category/models/category.dart'
     show CategoryType;
@@ -18,8 +19,14 @@ import 'package:pitaka/core/widgets/pull_to_dismiss_wrapper.dart';
 class ExpenseScreen extends ConsumerStatefulWidget {
   final bool initialIsExpense;
   final String? heroTag;
+  final TransactionModel? transaction;
 
-  const ExpenseScreen({super.key, this.initialIsExpense = true, this.heroTag});
+  const ExpenseScreen({
+    super.key,
+    this.initialIsExpense = true,
+    this.heroTag,
+    this.transaction,
+  });
 
   @override
   ConsumerState<ExpenseScreen> createState() => _ExpenseScreenState();
@@ -36,7 +43,18 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
   @override
   void initState() {
     super.initState();
-    _isExpense = widget.initialIsExpense;
+    final transaction = widget.transaction;
+    _isExpense = transaction != null
+        ? transaction.amount < 0
+        : widget.initialIsExpense;
+    if (transaction != null) {
+      _amountInput = transaction.amount
+          .abs()
+          .toStringAsFixed(transaction.amount.abs() % 1 == 0 ? 0 : 2)
+          .replaceFirst(RegExp(r'\.00$'), '');
+      _noteController.text = transaction.note ?? '';
+      _selectedCategory = transaction.category;
+    }
   }
 
   @override
@@ -88,41 +106,105 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
     }
 
     final signedAmount = _isExpense ? -_amountValue : _amountValue;
-    final transaction = TransactionModel(
-      accountId: _selectedAccount!.id!,
-      amount: signedAmount,
-      category: _selectedCategory,
-      note: _noteController.text.trim().isEmpty
-          ? null
-          : _noteController.text.trim(),
-      createdAt: DateTime.now(),
-    );
+    final original = widget.transaction;
+    final transaction = original == null
+        ? TransactionModel(
+            accountId: _selectedAccount!.id!,
+            amount: signedAmount,
+            category: _selectedCategory,
+            note: _noteController.text.trim().isEmpty
+                ? null
+                : _noteController.text.trim(),
+            createdAt: DateTime.now(),
+          )
+        : original.copyWith(
+            accountId: _selectedAccount!.id!,
+            amount: signedAmount,
+            category: _selectedCategory,
+            categoryId: null,
+            note: _noteController.text.trim().isEmpty
+                ? null
+                : _noteController.text.trim(),
+          );
 
-    await ref
-        .read(transactionsControllerProvider.notifier)
-        .addTransaction(transaction);
+    try {
+      if (original == null) {
+        await ref
+            .read(transactionsControllerProvider.notifier)
+            .addTransaction(transaction);
+      } else {
+        await ref
+            .read(transactionsControllerProvider.notifier)
+            .updateTransaction(
+              transaction,
+              previousAccountId: original.accountId,
+            );
+      }
+    } on InsufficientBalanceException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Insufficient balance. Available: ${currencySymbol(_selectedAccount!.currency)}${e.available.toStringAsFixed(2)}',
+          ),
+        ),
+      );
+      return;
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Transaction update failed: $e')));
+      return;
+    }
 
     final currency = _selectedAccount?.currency ?? 'PHP';
     final formattedAmount = formatMoney(_amountValue, currency);
 
     if (!mounted) return;
-
-    // Trigger the floating pill just before we pop the screen!
-    _showSuccessToast(context, formattedAmount, _selectedCategory);
-
+    showSuccessToast(
+      context,
+      original == null
+          ? '${_isExpense ? 'Expense' : 'Income'} saved\n$formattedAmount in ${_selectedCategory ?? 'Uncategorized'}'
+          : 'Transaction updated\n$formattedAmount',
+    );
     Navigator.of(context).pop();
   }
 
-  void _showSuccessToast(
-    BuildContext context,
-    String amountText,
-    String? category,
-  ) {
-    final message = category != null
-        ? '${_isExpense ? 'Expense' : 'Income'} saved\n$amountText in $category'
-        : '${_isExpense ? 'Expense' : 'Income'} saved\n$amountText';
+  Future<void> _confirmDelete() async {
+    final transaction = widget.transaction;
+    if (transaction == null) return;
 
-    showSuccessToast(context, message);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete transaction?'),
+        content: Text(
+          'This will reverse ${formatMoney(transaction.amount.abs(), _selectedAccount?.currency ?? 'PHP')} from its account.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFD64545),
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await ref
+        .read(transactionsControllerProvider.notifier)
+        .deleteTransaction(transaction.id!, accountId: transaction.accountId);
+    if (!mounted) return;
+    showSuccessToast(context, 'Transaction deleted');
+    Navigator.of(context).pop();
   }
 
   @override
@@ -149,8 +231,22 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
             ),
           ),
           leadingWidth: 90,
+          actions: widget.transaction == null
+              ? null
+              : [
+                  IconButton(
+                    tooltip: 'Delete transaction',
+                    onPressed: _confirmDelete,
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: Color(0xFFD64545),
+                    ),
+                  ),
+                ],
           title: Text(
-            _isExpense ? 'New Expense' : 'New Income',
+            widget.transaction == null
+                ? (_isExpense ? 'New Expense' : 'New Income')
+                : 'Edit Transaction',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -354,7 +450,17 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                       child: accountsAsync.when(
                         data: (accounts) {
                           if (_selectedAccount == null && accounts.isNotEmpty) {
-                            _selectedAccount = accounts.first;
+                            final original = widget.transaction;
+                            if (original == null) {
+                              _selectedAccount = accounts.first;
+                            } else {
+                              for (final account in accounts) {
+                                if (account.id == original.accountId) {
+                                  _selectedAccount = account;
+                                  break;
+                                }
+                              }
+                            }
                           }
                           final selectedValue =
                               accounts.contains(_selectedAccount)
@@ -451,7 +557,9 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                           ),
                         ),
                         child: Text(
-                          _isExpense ? 'Save Expense' : 'Save Income',
+                          widget.transaction == null
+                              ? (_isExpense ? 'Save Expense' : 'Save Income')
+                              : 'Save Changes',
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,

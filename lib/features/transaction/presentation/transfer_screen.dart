@@ -122,10 +122,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
         ? 'Transfer from $fromDisplayName'
         : customNote;
 
+    final groupId = 'transfer-${DateTime.now().microsecondsSinceEpoch}';
+
     // Create the deduction for the sender
     final expense = TransactionModel(
       accountId: _fromAccount!.id!,
-      amount: -_amountValue, // Negative amount
+      destinationAccountId: _toAccount!.id,
+      transferGroupId: groupId,
+      type: 'transfer',
+      amount: -_amountValue,
       category: 'Transfer Out',
       note: expenseNote,
       createdAt: now,
@@ -134,7 +139,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     // Create the addition for the receiver
     final income = TransactionModel(
       accountId: _toAccount!.id!,
-      amount: _amountValue, // Positive amount
+      destinationAccountId: _fromAccount!.id,
+      transferGroupId: groupId,
+      type: 'transfer',
+      amount: _amountValue,
       category: 'Transfer In',
       note: incomeNote,
       createdAt: now,

@@ -18,11 +18,28 @@ class InsufficientBalanceException implements Exception {
 class TransactionDao {
   Future<int> insertTransaction(TransactionModel transaction) async {
     final db = await DatabaseHelper.initDb();
-    return await db.insert(
-      'transactions',
-      transaction.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    return await db.transaction((txn) async {
+      return await txn.insert(
+        'transactions',
+        transaction.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    });
+  }
+
+  Future<double> _getLiveBalance(
+    DatabaseExecutor executor,
+    int accountId,
+  ) async {
+    final result = await executor.rawQuery(
+      '''SELECT COALESCE(initial_balance, 0) + COALESCE((
+          SELECT SUM(amount) FROM transactions WHERE account_id = accounts.id
+        ), 0) AS current_balance
+        FROM accounts WHERE id = ?''',
+      [accountId],
     );
+    if (result.isEmpty) return 0;
+    return (result.first['current_balance'] as num?)?.toDouble() ?? 0;
   }
 
   Future<void> transferFunds(
@@ -33,24 +50,41 @@ class TransactionDao {
   }) async {
     final requestedAmount = expense.amount.abs();
     final db = await DatabaseHelper.initDb();
-    final dao = accountDao ?? AccountDao();
 
     await db.transaction((txn) async {
       final liveBalance =
-          currentBalance ?? await dao.getCurrentBalance(expense.accountId, txn);
+          currentBalance ?? await _getLiveBalance(txn, expense.accountId);
 
       if (liveBalance < requestedAmount) {
         throw InsufficientBalanceException(liveBalance, requestedAmount);
       }
 
+      final groupId =
+          expense.transferGroupId ??
+          'transfer-${DateTime.now().microsecondsSinceEpoch}';
+      final expenseLeg = expense.copyWith(
+        type: 'transfer',
+        destinationAccountId: income.accountId,
+        transferGroupId: groupId,
+        category: expense.category ?? 'Transfer Out',
+        amount: -requestedAmount,
+      );
+      final incomeLeg = income.copyWith(
+        type: 'transfer',
+        destinationAccountId: expense.accountId,
+        transferGroupId: groupId,
+        category: income.category ?? 'Transfer In',
+        amount: requestedAmount,
+      );
+
       await txn.insert(
         'transactions',
-        expense.toMap(),
+        expenseLeg.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
       await txn.insert(
         'transactions',
-        income.toMap(),
+        incomeLeg.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     });
@@ -134,17 +168,142 @@ class TransactionDao {
   // UPDATE
   Future<int> updateTransaction(TransactionModel transaction) async {
     final db = await DatabaseHelper.initDb();
-    return await db.update(
-      'transactions',
-      transaction.toMap(),
-      where: 'id = ?',
-      whereArgs: [transaction.id],
-    );
+    if (transaction.id == null) return 0;
+
+    return await db.transaction((txn) async {
+      final oldRows = await txn.query(
+        'transactions',
+        where: 'id = ?',
+        whereArgs: [transaction.id],
+        limit: 1,
+      );
+      if (oldRows.isEmpty) return 0;
+      final old = TransactionModel.fromMap(oldRows.first);
+
+      if (old.transferGroupId != null) {
+        final legs = await txn.query(
+          'transactions',
+          where: 'transfer_group_id = ?',
+          whereArgs: [old.transferGroupId],
+        );
+        if (legs.length == 2) {
+          final source = legs.firstWhere(
+            (row) => (row['amount'] as num).toDouble() < 0,
+          );
+          final receiver = legs.firstWhere(
+            (row) => (row['amount'] as num).toDouble() > 0,
+          );
+
+          final sourceOld = TransactionModel.fromMap(source);
+          final receiverOld = TransactionModel.fromMap(receiver);
+          final requested = transaction.amount.abs();
+          final destinationId =
+              transaction.destinationAccountId ?? receiverOld.accountId;
+
+          final sourceBalance = await _getLiveBalance(
+            txn,
+            transaction.accountId,
+          );
+          final finalSourceBalance = sourceBalance - sourceOld.amount.abs();
+          if (transaction.amount < 0 && finalSourceBalance < requested) {
+            throw InsufficientBalanceException(finalSourceBalance, requested);
+          }
+
+          await txn.delete(
+            'transactions',
+            where: 'transfer_group_id = ?',
+            whereArgs: [old.transferGroupId],
+          );
+
+          final now = DateTime.now();
+          final groupId = old.transferGroupId!;
+          await txn.insert(
+            'transactions',
+            TransactionModel(
+              accountId: transaction.accountId,
+              destinationAccountId: destinationId,
+              transferGroupId: groupId,
+              type: 'transfer',
+              amount: -requested,
+              category: 'Transfer Out',
+              note: transaction.note,
+              transactionDate: transaction.transactionDate,
+              createdAt: now,
+            ).toMap(),
+          );
+          await txn.insert(
+            'transactions',
+            TransactionModel(
+              accountId: destinationId,
+              destinationAccountId: transaction.accountId,
+              transferGroupId: groupId,
+              type: 'transfer',
+              amount: requested,
+              category: 'Transfer In',
+              note: transaction.note,
+              transactionDate: transaction.transactionDate,
+              createdAt: now,
+            ).toMap(),
+          );
+          return 2;
+        }
+      }
+
+      if (old.accountId != transaction.accountId) {
+        final finalOldAccountBalance =
+            await _getLiveBalance(txn, old.accountId) - old.amount;
+        if (transaction.amount < 0 &&
+            await _getLiveBalance(txn, transaction.accountId) <
+                transaction.amount.abs()) {
+          throw InsufficientBalanceException(
+            await _getLiveBalance(txn, transaction.accountId),
+            transaction.amount.abs(),
+          );
+        }
+        finalOldAccountBalance;
+      } else if (transaction.amount < 0) {
+        final balanceWithoutOld =
+            await _getLiveBalance(txn, old.accountId) - old.amount;
+        if (balanceWithoutOld < transaction.amount.abs()) {
+          throw InsufficientBalanceException(
+            balanceWithoutOld,
+            transaction.amount.abs(),
+          );
+        }
+      }
+
+      return await txn.update(
+        'transactions',
+        transaction.toMap(),
+        where: 'id = ?',
+        whereArgs: [transaction.id],
+      );
+    });
   }
 
   // DELETE
   Future<int> deleteTransaction(int id) async {
     final db = await DatabaseHelper.initDb();
-    return await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
+
+    return await db.transaction((txn) async {
+      final rows = await txn.query(
+        'transactions',
+        where: 'id = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
+      if (rows.isEmpty) return 0;
+
+      final transaction = TransactionModel.fromMap(rows.first);
+      if (transaction.transferGroupId != null) {
+        return await txn.delete(
+          'transactions',
+          where: 'transfer_group_id = ?',
+          whereArgs: [transaction.transferGroupId],
+        );
+      }
+
+      return await txn.delete('transactions', where: 'id = ?', whereArgs: [id]);
+    });
   }
 }

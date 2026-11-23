@@ -11,6 +11,7 @@ class TransactionModel {
   final double? grossAmount;
   final double? taxAmount;
   final String? note;
+  final String? transferGroupId;
   final DateTime transactionDate;
   final DateTime createdAt;
 
@@ -25,6 +26,7 @@ class TransactionModel {
     this.grossAmount,
     this.taxAmount,
     this.note,
+    this.transferGroupId,
     DateTime? transactionDate,
     required this.createdAt,
   }) : transactionDate = transactionDate ?? createdAt;
@@ -41,6 +43,7 @@ class TransactionModel {
       'gross_amount': grossAmount,
       'tax_amount': taxAmount,
       'note': note,
+      'transfer_group_id': transferGroupId,
       'transaction_date': transactionDate.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
     };
@@ -69,6 +72,7 @@ class TransactionModel {
       grossAmount: (map['gross_amount'] as num?)?.toDouble(),
       taxAmount: (map['tax_amount'] as num?)?.toDouble(),
       note: map['note'] as String?,
+      transferGroupId: map['transfer_group_id'] as String?,
       transactionDate: txDate,
       createdAt: map['created_at'] != null
           ? DateTime.parse(map['created_at'] as String)
@@ -87,6 +91,7 @@ class TransactionModel {
     double? grossAmount,
     double? taxAmount,
     String? note,
+    String? transferGroupId,
     DateTime? transactionDate,
     DateTime? createdAt,
   }) {
@@ -101,6 +106,7 @@ class TransactionModel {
       grossAmount: grossAmount ?? this.grossAmount,
       taxAmount: taxAmount ?? this.taxAmount,
       note: note ?? this.note,
+      transferGroupId: transferGroupId ?? this.transferGroupId,
       transactionDate: transactionDate ?? this.transactionDate,
       createdAt: createdAt ?? this.createdAt,
     );

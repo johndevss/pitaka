@@ -198,7 +198,16 @@ void main() {
   );
 
   test('updateTransaction persists changes', () async {
-    final accountId = await seedAccount();
+    final accountId = await accountDao.insertAccount(
+      Account(
+        name: 'Update Account',
+        accountType: 'e-wallet',
+        institutionId: 'gcash',
+        initialBalance: 1000,
+        currency: 'PHP',
+        createdAt: DateTime(2026, 1, 1),
+      ),
+    );
     await dao.insertTransaction(
       TransactionModel(
         accountId: accountId,
